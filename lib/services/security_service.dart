@@ -9,7 +9,7 @@ abstract class SecurityService {
 }
 
 class PlatformSecurityService implements SecurityService {
-  static const _platform = AvesMethodChannel('deckers.thibault/aves/security');
+  static const _platform = AvesMethodChannel('com.murai.gallery/security');
 
   @override
   Future<bool> writeValue<T>(String key, T? value) async {

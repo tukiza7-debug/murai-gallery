@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">ಎವೀಸ್</string>
-    <string name="app_widget_label">ಫೋಟೋ ಫ್ರೇಮ್</string>
+    <string name="app_name">Murai Gallery</string>
+    <string name="app_widget_label">Murai Frame</string>
     <string name="wallpaper">ವಾಲ್ಪೇಪರ್</string>
     <string name="videos_shortcut_short_label">ವೀಡಿಯೊಗಳು</string>
     <string name="analysis_channel_name">ಮೀಡಿಯಾ ಸ್ಕ್ಯಾನ್</string>

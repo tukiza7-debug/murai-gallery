@@ -45,7 +45,7 @@ abstract class WindowService {
 }
 
 class PlatformWindowService implements WindowService {
-  static const _platform = AvesMethodChannel('deckers.thibault/aves/window');
+  static const _platform = AvesMethodChannel('com.murai.gallery/window');
 
   bool? _isCutoutAware, _supportsHdr, _supportsWideGamut;
 

@@ -14,16 +14,16 @@ Aves is a gallery and metadata explorer app. It is built for Android, with Flutt
 
 [<img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
       alt='Get it on Google Play'
-      height="80">](https://play.google.com/store/apps/details?id=deckers.thibault.aves&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1)
+      height="80">](https://play.google.com/store/apps/details?id=com.murai.gallery&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1)
 [<img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png"
       alt='Get it on IzzyOnDroid'
-      height="80">](https://apt.izzysoft.de/fdroid/index/apk/deckers.thibault.aves)
+      height="80">](https://apt.izzysoft.de/fdroid/index/apk/com.murai.gallery)
 [<img src="https://raw.githubusercontent.com/deckerst/common/main/assets/obtainium-badge-english.png"
       alt='Get it on Obtainium'
       height="80">](https://apps.obtainium.imranr.dev/redirect.html?r=obtainium://add/https://github.com/deckerst/aves)
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
       alt='Get it on F-Droid'
-      height="80">](https://f-droid.org/packages/deckers.thibault.aves.libre)
+      height="80">](https://f-droid.org/packages/com.murai.gallery.libre)
 [<img src="https://raw.githubusercontent.com/deckerst/common/main/assets/get-it-on-github.png"
       alt='Get it on GitHub'
       height="80">](https://github.com/deckerst/aves/releases/latest)
@@ -165,5 +165,5 @@ F4:79:47:27:E4:54:16:D8:7C:48:71:38:29:2B:70:9F:11:D1:CD:7D:AB:55:84:D8:C6:85:7D
 ```
 
 [Version badge]: https://img.shields.io/github/v/release/deckerst/aves?include_prereleases&sort=semver
-[RB badge]: https://shields.rbtlog.dev/simple/deckers.thibault.aves
+[RB badge]: https://shields.rbtlog.dev/simple/com.murai.gallery
 [Build badge]: https://img.shields.io/github/actions/workflow/status/deckerst/aves/quality-check.yml?branch=develop

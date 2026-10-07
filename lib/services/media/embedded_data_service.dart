@@ -24,7 +24,7 @@ abstract class EmbeddedDataService {
 }
 
 class PlatformEmbeddedDataService implements EmbeddedDataService {
-  static const _platform = AvesMethodChannel('deckers.thibault/aves/embedded');
+  static const _platform = AvesMethodChannel('com.murai.gallery/embedded');
 
   @override
   Future<List<ui.ImageDescriptor?>> getExifThumbnails(AvesEntry entry) async {

@@ -2,13 +2,14 @@ import 'package:aves/model/settings/settings.dart';
 import 'package:aves/widgets/common/fx/borders.dart';
 import 'package:aves/widgets/common/fx/colors.dart';
 import 'package:aves_model/aves_model.dart';
+import 'package:flutter/material.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
 class AvesLogo extends StatelessWidget {
   final double size;
 
-  const new({
+  const AvesLogo({
     super.key,
     required this.size,
   });
@@ -44,109 +45,62 @@ class AvesLogo extends StatelessWidget {
   }
 }
 
+/// Murai Gallery logo: a minimal murai (magpie-robin) perched on a rounded
+/// photo frame, with an amber sun — geometry mirrors `assets/logo/murai_logo.svg`.
 class AvesLogoPainter extends CustomPainter {
+  // palette tuned for light in-app surfaces (white circle backdrop)
+  static const teal = Color(0xFF0F766E);
+  static const tealDark = Color(0xFF0C5F58);
+  static const amber = Color(0xFFF59E0B);
+
   @override
   void paint(Canvas canvas, Size size) {
-    final dim = size.width / 100;
-    final strokePaint = Paint()
+    final s = size.width / 512;
+
+    // frame
+    final frameRect = RRect.fromRectAndCorners(
+      Rect.fromLTWH(104 * s, 104 * s, 304 * s, 304 * s),
+      topLeft: Radius.circular(60 * s),
+      topRight: Radius.circular(60 * s),
+      bottomLeft: Radius.circular(60 * s),
+      bottomRight: Radius.circular(60 * s),
+    );
+    canvas.drawRRect(frameRect, Paint()
       ..style = PaintingStyle.stroke
-      ..color = Colors.black
-      ..strokeWidth = dim * 3.050970
+      ..strokeWidth = 24 * s
       ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
+      ..strokeJoin = StrokeJoin.round
+      ..color = teal);
 
-    final path0 = Path();
-    path0.moveTo(31.784 * dim, 63.612 * dim);
-    path0.lineTo(48.252 * dim, 80.08 * dim);
-    final radius = Radius.elliptical(2.911 * dim, 2.911 * dim);
-    path0.arcToPoint(Offset(48.252 * dim, 84.196 * dim), radius: radius, rotation: 0, largeArc: false, clockwise: true);
-    path0.lineTo(40.379000000000005 * dim, 92.069 * dim);
-    path0.arcToPoint(Offset(19.072000000000006 * dim, 92.069 * dim), radius: Radius.elliptical(15.067 * dim, 15.067 * dim), rotation: 0, largeArc: false, clockwise: true);
-    path0.lineTo(11.2 * dim, 84.197 * dim);
-    path0.arcToPoint(Offset(11.2 * dim, 80.08 * dim), radius: radius, rotation: 0, largeArc: false, clockwise: true);
-    path0.lineTo(27.668 * dim, 63.611999999999995 * dim);
-    path0.arcToPoint(Offset(31.785 * dim, 63.611999999999995 * dim), radius: radius, rotation: 0, largeArc: false, clockwise: true);
-    path0.close();
+    // sun
+    canvas.drawCircle(Offset(196 * s, 180 * s), 28 * s, Paint()..color = amber);
 
-    final path1 = Path();
-    path1.moveTo(56.368 * dim, 39.026 * dim);
-    path1.lineTo(72.837 * dim, 55.494 * dim);
-    final radius2 = Radius.elliptical(2.904 * dim, 2.904 * dim);
-    path1.arcToPoint(Offset(72.837 * dim, 59.611 * dim), radius: radius2, rotation: 0, largeArc: false, clockwise: true);
-    path1.lineTo(56.367000000000004 * dim, 76.079 * dim);
-    path1.arcToPoint(Offset(52.252 * dim, 76.079 * dim), radius: radius2, rotation: 0, largeArc: false, clockwise: true);
-    path1.lineTo(35.784 * dim, 59.611 * dim);
-    path1.arcToPoint(Offset(35.784 * dim, 55.495 * dim), radius: radius2, rotation: 0, largeArc: false, clockwise: true);
-    path1.lineTo(52.251999999999995 * dim, 39.027 * dim);
-    path1.arcToPoint(Offset(56.367999999999995 * dim, 39.027 * dim), radius: radius2, rotation: 0, largeArc: false, clockwise: true);
-    path1.close();
+    // bird: tail (cocked up-left), body, head, beak, eye
+    final tail = Path()
+      ..moveTo(296 * s, 344 * s)
+      ..lineTo(200 * s, 270 * s)
+      ..lineTo(176 * s, 300 * s)
+      ..lineTo(284 * s, 400 * s)
+      ..close();
+    canvas.drawPath(tail, Paint()..color = tealDark);
 
-    final path2 = Path();
-    path2.moveTo(60.37 * dim, 30.908 * dim);
-    final radius4 = Radius.elliptical(2.91 * dim, 2.91 * dim);
-    path2.arcToPoint(Offset(60.37 * dim, 35.025 * dim), radius: radius4, rotation: 0, largeArc: false, clockwise: false);
-    path2.lineTo(76.838 * dim, 51.492 * dim);
-    path2.arcToPoint(Offset(80.954 * dim, 51.492 * dim), radius: radius4, rotation: 0, largeArc: false, clockwise: false);
-    path2.lineTo(97.422 * dim, 35.025 * dim);
-    path2.arcToPoint(Offset(97.422 * dim, 30.907999999999998 * dim), radius: radius4, rotation: 0, largeArc: false, clockwise: false);
-    path2.lineTo(89.24799999999999 * dim, 22.733999999999998 * dim);
-    path2.arcToPoint(Offset(68.54399999999998 * dim, 22.733999999999998 * dim), radius: Radius.elliptical(14.64 * dim, 14.64 * dim), rotation: 0, largeArc: false, clockwise: false);
-    path2.close();
-    path2.moveTo(76.624 * dim, 30.695 * dim);
-    final radius5 = Radius.elliptical(3.213 * dim, 3.213 * dim);
-    path2.arcToPoint(Offset(81.167 * dim, 30.695 * dim), radius: radius5, rotation: 0, largeArc: false, clockwise: true);
-    path2.arcToPoint(Offset(81.167 * dim, 35.237 * dim), radius: radius5, rotation: 0, largeArc: false, clockwise: true);
-    path2.arcToPoint(Offset(76.624 * dim, 35.237 * dim), radius: radius5, rotation: 0, largeArc: false, clockwise: true);
-    path2.arcToPoint(Offset(76.624 * dim, 30.694000000000003 * dim), radius: radius5, rotation: 0, largeArc: false, clockwise: true);
-    path2.close();
-
-    final path3 = Path();
-    path3.moveTo(24.305 * dim, 6.96 * dim);
-    path3.lineTo(48.35 * dim, 31.004 * dim);
-    path3.arcToPoint(Offset(48.35 * dim, 35.121 * dim), radius: radius, rotation: 0, largeArc: false, clockwise: true);
-    path3.lineTo(31.882 * dim, 51.588 * dim);
-    path3.arcToPoint(Offset(27.765 * dim, 51.588 * dim), radius: radius, rotation: 0, largeArc: false, clockwise: true);
-    path3.lineTo(17.084 * dim, 40.907 * dim);
-    path3.arcToPoint(Offset(17.084 * dim, 8.75 * dim), radius: Radius.elliptical(22.738 * dim, 22.738 * dim), rotation: 0, largeArc: false, clockwise: true);
-    path3.lineTo(18.874 * dim, 6.96 * dim);
-    path3.arcToPoint(Offset(24.305 * dim, 6.96 * dim), radius: Radius.elliptical(3.84 * dim, 3.84 * dim), rotation: 0, largeArc: false, clockwise: true);
-    path3.close();
-
-    canvas.drawPath(
-      path0,
-      Paint()
-        ..style = PaintingStyle.fill
-        ..color = const Color(0xffef435a),
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(282 * s, 332 * s), width: 100 * s, height: 140 * s),
+      Paint()..color = tealDark,
     );
 
-    canvas.drawPath(
-      path1,
-      Paint()
-        ..style = PaintingStyle.fill
-        ..color = const Color(0xffe0e0e0),
-    );
+    canvas.drawCircle(Offset(312 * s, 264 * s), 36 * s, Paint()..color = tealDark);
 
-    canvas.drawPath(
-      path2,
-      Paint()
-        ..style = PaintingStyle.fill
-        ..color = const Color(0xffffc11f),
-    );
+    final beak = Path()
+      ..moveTo(344 * s, 250 * s)
+      ..lineTo(382 * s, 264 * s)
+      ..lineTo(342 * s, 282 * s)
+      ..close();
+    canvas.drawPath(beak, Paint()..color = amber);
 
-    canvas.drawPath(
-      path3,
-      Paint()
-        ..style = PaintingStyle.fill
-        ..color = const Color(0xff1cc8eb),
-    );
-
-    // stroke should be painted over fill
-    canvas.drawPath(path0, strokePaint);
-    canvas.drawPath(path1, strokePaint);
-    canvas.drawPath(path2, strokePaint);
-    canvas.drawPath(path3, strokePaint);
+    canvas.drawCircle(Offset(322 * s, 252 * s), 7 * s, Paint()..color = Colors.white);
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

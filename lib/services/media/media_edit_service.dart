@@ -50,8 +50,8 @@ abstract class MediaEditService {
 }
 
 class PlatformMediaEditService implements MediaEditService {
-  static const _platform = AvesMethodChannel('deckers.thibault/aves/media_edit');
-  static final _opStream = AvesStreamsChannel('deckers.thibault/aves/media_op_stream');
+  static const _platform = AvesMethodChannel('com.murai.gallery/media_edit');
+  static final _opStream = AvesStreamsChannel('com.murai.gallery/media_op_stream');
 
   @override
   String get newOpId => DateTime.now().millisecondsSinceEpoch.toString();

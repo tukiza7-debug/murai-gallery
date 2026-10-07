@@ -22,8 +22,8 @@ abstract class MediaStoreService {
 }
 
 class PlatformMediaStoreService implements MediaStoreService {
-  static const _platform = AvesMethodChannel('deckers.thibault/aves/media_store');
-  static final _stream = AvesStreamsChannel('deckers.thibault/aves/media_store_stream');
+  static const _platform = AvesMethodChannel('com.murai.gallery/media_store');
+  static final _stream = AvesStreamsChannel('com.murai.gallery/media_store_stream');
 
   @override
   Future<List<int>> checkObsoleteContentIds(List<int?> knownContentIds) async {

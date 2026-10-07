@@ -19,7 +19,7 @@ import 'package:leak_tracker/leak_tracker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class AnalysisService {
-  static const _platform = AvesMethodChannel('deckers.thibault/aves/analysis');
+  static const _platform = AvesMethodChannel('com.murai.gallery/analysis');
 
   static Future<void> registerCallback() async {
     try {
@@ -49,7 +49,7 @@ class AnalysisService {
   }
 }
 
-const _channel = AvesMethodChannel('deckers.thibault/aves/analysis_service_background');
+const _channel = AvesMethodChannel('com.murai.gallery/analysis_service_background');
 
 @pragma('vm:entry-point')
 Future<void> _init() async {

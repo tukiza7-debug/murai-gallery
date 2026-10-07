@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 
 class AvesScreenState {
-  final EventChannel _eventChannel = const EventChannel('deckers.thibault/aves_screen_state/events');
+  final EventChannel _eventChannel = const EventChannel('com.murai.gallery.screen_state/events');
   Stream<ScreenStateEvent>? _screenStateStream;
 
   Stream<ScreenStateEvent>? get screenStateStream {

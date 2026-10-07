@@ -54,8 +54,8 @@ abstract class StorageService {
 }
 
 class PlatformStorageService implements StorageService {
-  static const _platform = AvesMethodChannel('deckers.thibault/aves/storage');
-  static final _stream = AvesStreamsChannel('deckers.thibault/aves/activity_result_stream');
+  static const _platform = AvesMethodChannel('com.murai.gallery/storage');
+  static final _stream = AvesStreamsChannel('com.murai.gallery/activity_result_stream');
 
   @override
   Future<Map<String, int>> getDataUsage() async {

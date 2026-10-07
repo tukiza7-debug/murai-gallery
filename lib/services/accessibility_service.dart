@@ -5,7 +5,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 
 class AccessibilityService {
-  static const _platform = AvesMethodChannel('deckers.thibault/aves/accessibility');
+  static const _platform = AvesMethodChannel('com.murai.gallery/accessibility');
 
   static Future<bool> areAnimationsRemoved() async {
     try {

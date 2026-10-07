@@ -24,21 +24,43 @@ class AboutCredits extends StatelessWidget {
 
   static Widget buildBody(BuildContext context) {
     final l10n = context.l10n;
-    return Text.rich(
-      TextSpan(
-        children: [
-          TextSpan(text: l10n.aboutCreditsWorldAtlas1),
-          const WidgetSpan(
-            child: LinkChip(
-              text: 'World Atlas',
-              urlString: 'https://github.com/topojson/world-atlas',
-              textStyle: TextStyle(fontWeight: .bold),
-            ),
-            alignment: .middle,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(text: l10n.aboutAvesCredit1),
+              const WidgetSpan(
+                child: LinkChip(
+                  text: 'Aves',
+                  urlString: 'https://github.com/deckerst/aves',
+                  textStyle: TextStyle(fontWeight: .bold),
+                ),
+                alignment: .middle,
+              ),
+              TextSpan(text: l10n.aboutAvesCredit2),
+            ],
           ),
-          TextSpan(text: l10n.aboutCreditsWorldAtlas2),
-        ],
-      ),
+        ),
+        const SizedBox(height: 8),
+        Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(text: l10n.aboutCreditsWorldAtlas1),
+              const WidgetSpan(
+                child: LinkChip(
+                  text: 'World Atlas',
+                  urlString: 'https://github.com/topojson/world-atlas',
+                  textStyle: TextStyle(fontWeight: .bold),
+                ),
+                alignment: .middle,
+              ),
+              TextSpan(text: l10n.aboutCreditsWorldAtlas2),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

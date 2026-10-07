@@ -180,10 +180,10 @@ class _AvesAppState extends State<AvesApp> with WidgetsBindingObserver {
   // observers are not registered when using the same list object with different items
   // the list itself needs to be reassigned
   List<NavigatorObserver> _navigatorObservers = [AvesApp.pageRouteObserver];
-  final EventChannel _mediaStoreChangeChannel = const OptionalEventChannel('deckers.thibault/aves/media_store_change');
-  final EventChannel _newIntentChannel = const OptionalEventChannel('deckers.thibault/aves/new_intent_stream');
-  final EventChannel _analysisCompletionChannel = const OptionalEventChannel('deckers.thibault/aves/analysis_events');
-  final EventChannel _platformMessageChannel = const OptionalEventChannel('deckers.thibault/aves/platform_messages');
+  final EventChannel _mediaStoreChangeChannel = const OptionalEventChannel('com.murai.gallery/media_store_change');
+  final EventChannel _newIntentChannel = const OptionalEventChannel('com.murai.gallery/new_intent_stream');
+  final EventChannel _analysisCompletionChannel = const OptionalEventChannel('com.murai.gallery/analysis_events');
+  final EventChannel _platformMessageChannel = const OptionalEventChannel('com.murai.gallery/platform_messages');
 
   static final GlobalKey<NavigatorState> navigatorKey = GlobalKey(debugLabel: 'app-navigator');
   static ScreenBrightness? _screenBrightness;
@@ -677,7 +677,7 @@ class _AvesAppContentDecoratorState extends State<AvesAppContentDecorator> with 
   final ValueNotifier<TvMediaQueryModifier?> _tvMediaQueryModifierNotifier = ValueNotifier(null);
   final Set<StreamSubscription> _subscriptions = {};
 
-  final EventChannel _platformWindowChangeChannel = const OptionalEventChannel('deckers.thibault/aves/window_change');
+  final EventChannel _platformWindowChangeChannel = const OptionalEventChannel('com.murai.gallery/window_change');
 
   CollectionSource get source => widget.source;
 

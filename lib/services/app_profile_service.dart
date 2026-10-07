@@ -19,7 +19,7 @@ abstract class AppProfileService {
 }
 
 class PlatformAppProfileService implements AppProfileService {
-  static const _platform = AvesMethodChannel('deckers.thibault/aves/app_profile');
+  static const _platform = AvesMethodChannel('com.murai.gallery/app_profile');
 
   @override
   Future<bool> canInteractAcrossProfiles() async {

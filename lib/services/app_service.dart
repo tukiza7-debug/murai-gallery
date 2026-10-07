@@ -50,8 +50,8 @@ abstract class AppService {
 }
 
 class PlatformAppService implements AppService {
-  static const _platform = AvesMethodChannel('deckers.thibault/aves/app');
-  static final _stream = AvesStreamsChannel('deckers.thibault/aves/activity_result_stream');
+  static const _platform = AvesMethodChannel('com.murai.gallery/app');
+  static final _stream = AvesStreamsChannel('com.murai.gallery/activity_result_stream');
 
   @override
   Future<Set<Package>> getPackages() async {

@@ -6,7 +6,7 @@ import 'package:aves/services/common/services.dart';
 import 'package:flutter/services.dart';
 
 class AndroidDebugService {
-  static const _platform = AvesMethodChannel('deckers.thibault/aves/debug');
+  static const _platform = AvesMethodChannel('com.murai.gallery/debug');
 
   static Future<Map> getContextDirs() async {
     try {

@@ -29,9 +29,9 @@ class AvesStreamsChannel extends StreamsChannel {
 }
 
 class AvesChannels {
-  static const geocoding = 'deckers.thibault/aves/geocoding';
-  static const mediaSession = 'deckers.thibault/aves/media_session';
-  static const metadataFetch = 'deckers.thibault/aves/metadata_fetch';
+  static const geocoding = 'com.murai.gallery/geocoding';
+  static const mediaSession = 'com.murai.gallery/media_session';
+  static const metadataFetch = 'com.murai.gallery/metadata_fetch';
 
   static const _all = <MethodChannel>[
     AvesMethodChannel(geocoding),

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">ஏவ்ச்</string>
-    <string name="app_widget_label">புகைப்பட சட்டகம்</string>
+    <string name="app_name">Murai Gallery</string>
+    <string name="app_widget_label">Murai Frame</string>
     <string name="wallpaper">வால்பேப்பர்</string>
     <string name="map_shortcut_short_label">வரைபடம்</string>
     <string name="search_shortcut_short_label">தேடல்</string>

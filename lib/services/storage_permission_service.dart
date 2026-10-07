@@ -33,8 +33,8 @@ abstract class StoragePermissionService {
 }
 
 class PlatformStoragePermissionService implements StoragePermissionService {
-  static const _platform = AvesMethodChannel('deckers.thibault/aves/storage_permission');
-  static final _stream = AvesStreamsChannel('deckers.thibault/aves/activity_result_stream');
+  static const _platform = AvesMethodChannel('com.murai.gallery/storage_permission');
+  static final _stream = AvesStreamsChannel('com.murai.gallery/activity_result_stream');
 
   @override
   Future<Map<VolumeRelativeDirectory, List<StorageApi>>> getEditionApis(Iterable<String> dirPaths, {required bool insertion}) async {

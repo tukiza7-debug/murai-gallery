@@ -1,6 +1,6 @@
 name: aves
-description: A visual media gallery and metadata explorer app.
-repository: https://github.com/deckerst/aves
+description: Murai Gallery - a beautiful, private, and powerful media gallery and metadata explorer.
+repository: https://github.com/tukiza7-debug/murai-gallery
 publish_to: none
 
 # version bump checklist:
@@ -8,7 +8,7 @@ publish_to: none
 # - edit GitHub changelog:     /CHANGELOG.md
 # - edit Play Store changelog: /whatsnew/whatsnew-en-US
 # - run `scripts/apply_version_bump.sh`
-version: 1.15.5+179
+version: 1.0.0+1
 
 environment:
   # this project bundles Flutter SDK via `flutter_wrapper`
@@ -24,7 +24,7 @@ workspace:
   - plugins/aves_map
   - plugins/aves_model
   - plugins/aves_report
-  - plugins/aves_report_crashlytics
+  - plugins/aves_report_console
   - plugins/aves_screen_state
   - plugins/aves_services
   - plugins/aves_services_google
@@ -49,7 +49,7 @@ dependencies:
   aves_report:
     path: plugins/aves_report
   aves_report_platform:
-    path: plugins/aves_report_crashlytics
+    path: plugins/aves_report_console
   aves_screen_state:
     path: plugins/aves_screen_state
   aves_services:
@@ -176,6 +176,7 @@ dev_dependencies:
 
 flutter:
   assets:
+    - assets/logo/
     - assets/
   generate: true
   uses-material-design: true

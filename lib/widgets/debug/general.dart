@@ -49,7 +49,7 @@ class _DebugGeneralSectionState extends State<DebugGeneralSection> with Automati
         SwitchListTile(
           value: AvesMethodChannel.kDebug,
           onChanged: (v) => setState(() => AvesMethodChannel.kDebug = v),
-          title: const Text('Trace Aves platform channels'),
+          title: const Text('Trace Murai platform channels'),
         ),
         SwitchListTile(
           value: _taskQueueOverlayEntry != null,

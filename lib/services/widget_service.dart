@@ -3,8 +3,8 @@ import 'package:aves/services/common/services.dart';
 import 'package:flutter/services.dart';
 
 class WidgetService {
-  static const _configureChannel = AvesMethodChannel('deckers.thibault/aves/widget_configure');
-  static const _updateChannel = AvesMethodChannel('deckers.thibault/aves/widget_update');
+  static const _configureChannel = AvesMethodChannel('com.murai.gallery/widget_configure');
+  static const _updateChannel = AvesMethodChannel('com.murai.gallery/widget_update');
 
   static Future<bool> configure() async {
     try {

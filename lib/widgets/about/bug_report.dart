@@ -161,7 +161,7 @@ class _BugReportContentState extends State<BugReportContent> with FeedbackMixin 
     final tagCount = source.sortedTags.length;
 
     return [
-      'Aves: ${device.packageVersion}-$flavor, build ${packageInfo.buildNumber}, package=${device.packageName}, installer=${packageInfo.installerStore}',
+      'Murai Gallery: ${device.packageVersion}-$flavor, build ${packageInfo.buildNumber}, package=${device.packageName}, installer=${packageInfo.installerStore}',
       'Flutter: ${FlutterVersion.channel} ${FlutterVersion.version}',
       'Android: ${androidInfo.version.release}, API ${androidInfo.version.sdkInt}, MPC $mpc, build: ${androidInfo.display}',
       'Device: ${androidInfo.manufacturer} ${androidInfo.model}',

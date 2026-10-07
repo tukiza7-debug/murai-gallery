@@ -1,4 +1,4 @@
-group = "deckers.thibault.aves.aves_screen_state"
+group = "com.murai.gallery.aves_screen_state"
 version = "1.0-SNAPSHOT"
 
 buildscript {
@@ -28,7 +28,7 @@ plugins {
 }
 
 android {
-    namespace = "deckers.thibault.aves.aves_screen_state"
+    namespace = "com.murai.gallery.aves_screen_state"
     compileSdk = 37
 
     kotlin {

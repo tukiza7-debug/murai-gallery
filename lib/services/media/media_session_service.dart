@@ -27,7 +27,7 @@ class PlatformMediaSessionService implements MediaSessionService, Disposable {
   static const _sessionChannel = AvesMethodChannel(AvesChannels.mediaSession);
 
   final Set<StreamSubscription> _subscriptions = {};
-  final EventChannel _commandChannel = const OptionalEventChannel('deckers.thibault/aves/media_command');
+  final EventChannel _commandChannel = const OptionalEventChannel('com.murai.gallery/media_command');
   final StreamController _streamController = StreamController.broadcast();
 
   new() {

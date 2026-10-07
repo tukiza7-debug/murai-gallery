@@ -8,7 +8,7 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-val packageName = "deckers.thibault.aves"
+val packageName = "com.murai.gallery"
 
 // Keys
 
@@ -29,15 +29,15 @@ if (keystorePropertiesFile.exists()) {
             keystoreProperties[propKey] = env[envKey]
         }
     }
-    getEnv("storeFile", "AVES_STORE_FILE")
-    getEnv("storePassword", "AVES_STORE_PASSWORD")
-    getEnv("keyAlias", "AVES_KEY_ALIAS")
-    getEnv("keyPassword", "AVES_KEY_PASSWORD")
-    getEnv("googleApiKey", "AVES_GOOGLE_API_KEY")
+    getEnv("storeFile", "MURAI_STORE_FILE")
+    getEnv("storePassword", "MURAI_STORE_PASSWORD")
+    getEnv("keyAlias", "MURAI_KEY_ALIAS")
+    getEnv("keyPassword", "MURAI_KEY_PASSWORD")
+    getEnv("googleApiKey", "MURAI_GOOGLE_API_KEY")
 }
 
 android {
-    namespace = "deckers.thibault.aves"
+    namespace = "com.murai.gallery"
     compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
@@ -253,10 +253,4 @@ dependencies {
     compileOnly(rootProject.findProject(":streams_channel")!!)
 }
 
-if (rootProject.extra["aves_useCrashlytics"] as Boolean) {
-    println("Building flavor with Crashlytics plugin")
-    apply(plugin = "com.google.gms.google-services")
-    apply(plugin = "com.google.firebase.crashlytics")
-} else {
-    println("Building flavor without reporting plugin")
-}
+// Murai Gallery: no Crashlytics / Google Services plugin (reports go to console)

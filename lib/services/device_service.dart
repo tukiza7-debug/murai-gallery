@@ -42,7 +42,7 @@ abstract class DeviceService {
 }
 
 class PlatformDeviceService extends DeviceService {
-  static const _platform = AvesMethodChannel('deckers.thibault/aves/device');
+  static const _platform = AvesMethodChannel('com.murai.gallery/device');
 
   @override
   Future<Map<String, Object?>> getCapabilities() async {
