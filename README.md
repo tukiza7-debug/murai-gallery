@@ -1,169 +1,152 @@
-<div align="center">
+<p align="center">
+  <img src="assets/logo/banner_wide.png" alt="Murai Gallery" width="720" />
+</p>
 
-<img src="https://raw.githubusercontent.com/deckerst/aves/develop/aves_logo.svg" alt='Aves logo' width="200" />
+<h1 align="center">Murai Gallery</h1>
 
-## Aves
+<p align="center">
+  <strong>A beautiful, private and powerful media gallery — with a full toolbox built in.</strong>
+</p>
 
-[ˈaː.ves]
+<p align="center">
+  <a href="https://github.com/tukiza7-debug/murai-gallery/releases/latest"><img alt="version" src="https://img.shields.io/github/v/release/tukiza7-debug/murai-gallery?include_prereleases&label=version&color=0F766E"></a>
+  <a href="https://github.com/tukiza7-debug/murai-gallery/actions/workflows/release.yml"><img alt="build" src="https://img.shields.io/github/actions/workflow/status/tukiza7-debug/murai-gallery/release.yml?branch=main&label=build&color=0F766E"></a>
+  <a href="https://github.com/tukiza7-debug/murai-gallery/actions/workflows/quality-check.yml"><img alt="quality" src="https://img.shields.io/github/actions/workflow/status/tukiza7-debug/murai-gallery/quality-check.yml?branch=main&label=quality&color=0F766E"></a>
+  <img alt="platform" src="https://img.shields.io/badge/platform-Android-0F766E">
+  <a href="LICENSE"><img alt="license" src="https://img.shields.io/github/license/tukiza7-debug/murai-gallery?color=F59E0B"></a>
+</p>
 
-![Version badge][Version badge]
-![RB badge][RB badge]
-![Build badge][Build badge]
+---
 
-Aves is a gallery and metadata explorer app. It is built for Android, with Flutter.
+Murai Gallery is a modern Android gallery app for photos and videos: fast browsing, deep metadata,
+strong privacy, and a set of 16 extra tools that go far beyond a plain gallery. It is a fork of the
+excellent open-source gallery **Aves**, rebranded and extended.
 
-[<img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
-      alt='Get it on Google Play'
-      height="80">](https://play.google.com/store/apps/details?id=com.murai.gallery&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1)
-[<img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png"
-      alt='Get it on IzzyOnDroid'
-      height="80">](https://apt.izzysoft.de/fdroid/index/apk/com.murai.gallery)
-[<img src="https://raw.githubusercontent.com/deckerst/common/main/assets/obtainium-badge-english.png"
-      alt='Get it on Obtainium'
-      height="80">](https://apps.obtainium.imranr.dev/redirect.html?r=obtainium://add/https://github.com/deckerst/aves)
-[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
-      alt='Get it on F-Droid'
-      height="80">](https://f-droid.org/packages/com.murai.gallery.libre)
-[<img src="https://raw.githubusercontent.com/deckerst/common/main/assets/get-it-on-github.png"
-      alt='Get it on GitHub'
-      height="80">](https://github.com/deckerst/aves/releases/latest)
+## Install
 
+1. Open the [latest release](https://github.com/tukiza7-debug/murai-gallery/releases/latest).
+2. Download an APK:
+   - `MuraiGallery-x.y.z-universal.apk` — works on **every** device (larger download), or
+   - pick your ABI: `arm64-v8a` (most modern phones), `armeabi-v7a` (older phones), `x86_64` (emulators/ChromeOS).
+3. Install the APK (allow "install from this source" when prompted).
 
-[Compare versions](https://github.com/deckerst/aves/wiki/App-Versions)
-      
-<div align="left">
+Every push to `main` is built, signed and published automatically as a new release — always check
+the latest one for the newest features.
 
 ## Features
 
-Aves can handle all sorts of images and videos, including your typical JPEGs and MP4s, but also more exotic things like **multi-page TIFFs, SVGs, old AVIs and more**!
+### Original Aves features
 
-It scans your media collection to identify **motion photos**, **panoramas** (aka photo spheres), **360° videos**, as well as **GeoTIFF** files.
+- Collections, albums (incl. dynamic/automatic albums), tags, countries, states and places
+- Powerful search with query language and saved filters
+- Map view with geo-tagged media clustering
+- Statistics page (collection breakdown charts)
+- Rich metadata viewer and editor (EXIF, XMP, IPTC)
+- Motion photo, panorama and 360° video support
+- Multi-page formats: TIFF, SVG, and more
+- Vault for hiding albums, and a bin (trash) with restore
+- Slideshow, screen saver, cast, DLNA
+- Home screen widgets and app shortcuts
+- Light / dark / AMOLED black themes, dynamic color (Material You)
+- 50+ languages, instant in-app language switch
 
-**Navigation and search** is an important part of Aves. The goal is for users to easily flow from albums to photos to tags to maps, etc.
+### New in Murai Gallery (the 16)
 
-Aves integrates with Android (including Android TV) with features such as **widgets**, **app shortcuts**, **screen saver** and **global search** handling. It also works as a **media viewer and picker**.
+| # | Tool | What it does |
+|---|------|--------------|
+| 1 | **Duplicate Finder** | Exact duplicates by hash + similar photos by perceptual hash, side-by-side preview, bulk delete |
+| 2 | **Full Image Editor** | Crop, rotate/flip, brightness/contrast/saturation, filter presets, text overlays, freehand drawing, emoji stickers |
+| 3 | **Video Trimmer** | Pick start/end on a frame-strip timeline, saves a losslessly trimmed MP4 |
+| 4 | **Compressor & Resizer** | Batch-reduce photo size/resolution with a quality slider and before/after sizes |
+| 5 | **OCR Text Extractor** | Read text from photos fully offline, copy and reuse it |
+| 6 | **Collage Maker** | Combine 2–9 photos with grid templates, borders and background color |
+| 7 | **GIF Maker** | Create animated GIFs from a video clip or a sequence of images |
+| 8 | **Batch Rename** | Pattern-based renaming (`{date}`, `{time}`, `{counter}`, `{name}`, `{ext}`) with live preview |
+| 9 | **Storage Cleaner** | Usage by folder and type, large files, screenshots, old downloads — with one-tap cleanup |
+| 10 | **QR / Barcode Scanner** | Detect and decode codes inside your photos, open links safely after confirmation |
+| 11 | **Auto Wallpaper Changer** | Rotate your wallpaper from chosen albums hourly/daily/weekly (WorkManager) |
+| 12 | **Share to Telegram** | Send selected media via your own bot (token + chat ID), with progress and automatic retries |
+| 13 | **Advanced Sort** | 10 sort types (date taken, date added, name, size, type, resolution, duration, rating & favorites, location, random) with direction toggle, live preview, group-by combination, per-screen memory, saved presets, and "set as default" |
+| 14 | **Private Vault Upgrade** | Decoy PIN that opens a fake empty gallery, vault hidden from recents, biometric unlock support |
+| 15 | **Backup & Restore** | Export settings, favourites, sort presets and tool configuration to a zip; import anywhere |
+| 16 | **Settings Upgrades** | In-app update checks via GitHub Releases (with clear offline messaging), error library with 30-day retention and export, AMOLED/dynamic theme options, instant language switching |
 
-## Screenshots
+All heavy work (hashing, compression, GIF/video encoding, sorting, uploads) runs in background
+isolates or Kotlin coroutines with progress notifications, so the UI never freezes.
 
-<div align="center">
+## Build from source
 
-[<img src="https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/readme/en/1.png"
-      alt='Collection screenshot'
-      width="130" />](https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/play/en/1.png)
-[<img
-      src="https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/readme/en/2.png"
-      alt='Image screenshot'
-      width="130" />](https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/play/en/2.png)
-[<img
-      src="https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/readme/en/5.png"
-      alt='Stats screenshot'
-      width="130" />](https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/play/en/5.png)
-[<img
-      src="https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/readme/en/3.png"
-      alt='Info (basic) screenshot'
-      width="130" />](https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/play/en/3.png)
-[<img
-      src="https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/readme/en/4.png"
-      alt='Info (metadata) screenshot'
-      width="130" />](https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/play/en/4.png)
-[<img
-      src="https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/readme/en/6.png"
-      alt='Countries screenshot'
-      width="130" />](https://raw.githubusercontent.com/deckerst/aves_extra/main/screenshots/play/en/6.png)
+Requirements: Android Studio (or the Android SDK), JDK 21. The Flutter SDK is bundled via the
+`.flutter` submodule — no separate Flutter install needed.
 
-<div align="left">
+```bash
+git clone --recurse-submodules https://github.com/tukiza7-debug/murai-gallery.git
+cd murai-gallery
 
-## Changelog
+# set up the bundled Flutter SDK and dependencies (play flavor)
+./flutterw pub get
+./flutterw gen-l10n
 
-The list of changes for past and future releases is available [here](https://github.com/deckerst/aves/blob/develop/CHANGELOG.md).
+# debug build
+./flutterw build apk --debug --flavor play -t lib/main_play.dart
+
+# release build (needs signing configuration, see below)
+./flutterw build apk --release --flavor play -t lib/main_play.dart --split-per-abi
+```
+
+### Signing
+
+Debug builds need no configuration. Release builds read a keystore from (in order):
+
+1. `android/key.properties` (local file — see `android/key_template.properties`), or
+2. environment variables (used by CI): `MURAI_STORE_FILE`, `MURAI_STORE_PASSWORD`, `MURAI_KEY_ALIAS`, `MURAI_KEY_PASSWORD`.
+
+Without either, the APK builds unsigned — no crash, no secrets required.
+
+### Required GitHub Secrets (for the release workflow)
+
+| Secret | Description |
+|--------|-------------|
+| `MURAI_KEYSTORE_BASE64` | Base64 of your release keystore (`base64 -w0 murai-release.jks`) |
+| `MURAI_STORE_PASSWORD` | Keystore password |
+| `MURAI_KEY_ALIAS` | Key alias inside the keystore |
+| `MURAI_KEY_PASSWORD` | Key password |
+
+The repository ships with a CI-only demo keystore in secrets so that builds work out of the box.
+**For production, generate your own keystore and replace all four secrets.**
+
+### Versioning
+
+Each push to `main` produces a release automatically:
+
+- versionName = `1.0.<run number>`
+- versionCode = `<run number>`
+- tag = `v1.0.<run number>`
 
 ## Permissions
 
-| Permission                                                                                                                                             | Purpose                       |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------- |
-| READ_MEDIA_IMAGES<br>READ_MEDIA_VIDEO<br>READ_MEDIA_VISUAL_USER_SELECTED<br>ACCESS_MEDIA_LOCATION                                                      | Media collection read access  |
-| MANAGE_MEDIA                                                                                                                                           | Media collection write access |
-| FOREGROUND_SERVICE<br>FOREGROUND_SERVICE_MEDIA_PROCESSING<br>POST_NOTIFICATIONS<br>ACCESS_NETWORK_STATE<br>ACCESS_WIFI_STATE<br>RECEIVE_BOOT_COMPLETED | Media scan service feedback   |
-| INTERNET                                                                                                                                               | Map view, reverse geocoding   |
-| SET_WALLPAPER                                                                                                                                          | Wallpaper setting             |
-| USE_BIOMETRIC<br>USE_FINGERPRINT                                                                                                                       | Vault lock                    |
-| WAKE_LOCK                                                                                                                                              | Keeping screen on             |
+Murai Gallery only asks for what it needs, always with a short explanation first:
 
-## Contributing
+| Permission | Why |
+|------------|-----|
+| `READ_MEDIA_IMAGES` / `READ_MEDIA_VIDEO` (+ `READ_MEDIA_VISUAL_USER_SELECTED`) | Android 13+ scoped media access to show your gallery |
+| `READ_EXTERNAL_STORAGE` (≤ Android 12) | Same, on older Android versions |
+| `ACCESS_MEDIA_LOCATION` | Read embedded GPS for the map and metadata (you can turn it off) |
+| `POST_NOTIFICATIONS` | Progress of long tools (duplicates scan, compression, uploads) and playback controls |
+| `SET_WALLPAPER` | Applying / auto-rotating your wallpaper |
+| `INTERNET` | Optional features only: map tiles, Telegram sharing, update checks |
+| `WAKE_LOCK`, `RECEIVE_BOOT_COMPLETED` | Reliable background analysis and wallpaper scheduling |
+| Biometric (via system prompt) | Unlocking vaults when you choose the "system" lock type |
 
-### Issues
+Murai Gallery contains **no ads and no analytics**. Nothing leaves your device unless you use the
+map, Telegram sharing, or the manual update check.
 
-[Bug reports](https://github.com/deckerst/aves/issues/new?assignees=&labels=type%3Abug&template=bug_report.yml&title=) and [feature requests](https://github.com/deckerst/aves/issues/new?assignees=&labels=type%3Afeature&template=feature_request.yml&title=) are welcome, but read the [guidelines](https://github.com/deckerst/aves/issues/234) first. If you have questions, check out the [discussions](https://github.com/deckerst/aves/discussions).
+## Credits
 
-### Code
+Murai Gallery is based on [**Aves**](https://github.com/deckerst/aves) by
+[deckerst](https://github.com/deckerst) and its contributors — thank you for the incredible
+foundation. The murai (Oriental magpie-robin) logo was designed for this project.
 
-At this stage this project does *not* accept PRs.
+## License
 
-### Translations
-
-Translations are powered by [Weblate](https://hosted.weblate.org/engage/aves/) and the effort of wonderfully generous volunteers.
-<a href="https://hosted.weblate.org/engage/aves/">
-<img src="https://hosted.weblate.org/widgets/aves/-/multi-auto.svg" alt="Translation status" />
-</a>
-
-If you want to translate this app in your language and share the result, [there is a guide](https://github.com/deckerst/aves/wiki/Contributing-to-Translations).
-
-### Donations
-
-Some users have expressed the wish to financially support the project. Thanks! ❤️
-
-[<img src="https://raw.githubusercontent.com/deckerst/common/main/assets/paypal-badge-cropped.png"
-      alt='Donate with PayPal'
-      height="40">](https://www.paypal.com/donate/?hosted_button_id=RWKQ4J7D8USX6)
-[<img src="https://liberapay.com/assets/widgets/donate.svg"
-      alt='Donate using Liberapay'
-      height="40">](https://liberapay.com/deckerst/donate)
-
-## Project Setup
-
-Before running or building the app, update the dependencies for the desired flavor:
-```
-# scripts/apply_flavor_play.sh
-```
-
-To build the project, create a file named `<app dir>/android/key.properties`. It should contain a reference to a keystore for app signing, and other necessary credentials. See [key_template.properties](https://github.com/deckerst/aves/blob/develop/android/key_template.properties) for the expected keys.
-
-To run the app:
-```
-# ./flutterw run -t lib/main_play.dart --flavor play
-```
-
-To debug the app Kotlin code, if attaching the debugger from Android Studio fails:
-1) open `android` folder in Android Studio,
-2) `Edit Configurations...`,
-3) select configuration `app`,
-4) select tab `Debugger`
-5) select tab `LLDB Post Attach Commands`
-6) add:
-```
-process handle SIGSEGV --pass true --stop false --notify true
-```
-
-## Certificate Fingerprint
-
-```
-Owner: CN=Thibault Deckers
-Issuer: CN=Thibault Deckers
-Serial number: 12957861
-Valid from: Wed Dec 07 08:07:30 CET 2016 until: Sun Dec 01 08:07:30 CET 2041
-Certificate fingerprints:
-         SHA1: 59:A5:00:13:FA:7A:2F:97:91:1B:52:D6:81:CA:FA:EB:F8:35:05:E8
-         SHA256: F4:79:47:27:E4:54:16:D8:7C:48:71:38:29:2B:70:9F:11:D1:CD:7D:AB:55:84:D8:C6:85:7D:92:E0:66:60:4B
-```
-SHA1: 
-```text
-59:A5:00:13:FA:7A:2F:97:91:1B:52:D6:81:CA:FA:EB:F8:35:05:E8
-```
-SHA256:
-```text
-F4:79:47:27:E4:54:16:D8:7C:48:71:38:29:2B:70:9F:11:D1:CD:7D:AB:55:84:D8:C6:85:7D:92:E0:66:60:4B
-```
-
-[Version badge]: https://img.shields.io/github/v/release/deckerst/aves?include_prereleases&sort=semver
-[RB badge]: https://shields.rbtlog.dev/simple/com.murai.gallery
-[Build badge]: https://img.shields.io/github/actions/workflow/status/deckerst/aves/quality-check.yml?branch=develop
+Like Aves, Murai Gallery is licensed under the [BSD-3-Clause License](LICENSE).

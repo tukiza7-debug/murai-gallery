@@ -53,3 +53,10 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Murai Gallery: signing secrets (never commit)
+key.properties
+android/key.properties
+*.jks
+*.keystore
+murai-release.jks
