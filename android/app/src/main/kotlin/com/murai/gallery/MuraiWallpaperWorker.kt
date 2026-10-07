@@ -1,5 +1,6 @@
 package com.murai.gallery
 
+import android.app.WallpaperManager
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.provider.MediaStore

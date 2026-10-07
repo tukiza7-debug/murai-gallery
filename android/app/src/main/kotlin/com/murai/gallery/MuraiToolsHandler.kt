@@ -2,6 +2,7 @@ package com.murai.gallery
 
 import android.app.Notification
 import android.app.NotificationChannel
+import android.app.WallpaperManager
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.ContentValues
@@ -172,7 +173,7 @@ class MuraiToolsHandler(private val context: Context) : MethodChannel.MethodCall
             }
             if (indexMap.isEmpty()) throw IllegalStateException("no tracks found")
             val buffer = java.nio.ByteBuffer.allocate(1024 * 1024)
-            val info = MediaExtractor.BufferInfo()
+            val info = MediaCodec.BufferInfo()
             val startUs = (startMs as Number).toLong() * 1000
             val endUs = (endMs as Number).toLong() * 1000
             muxer.setOrientationHint(rotation)
@@ -187,7 +188,7 @@ class MuraiToolsHandler(private val context: Context) : MethodChannel.MethodCall
                     info.presentationTimeUs = extractor.sampleTime
                     if (info.presentationTimeUs > endUs) break
                     if (info.presentationTimeUs >= startUs && info.size > 0) {
-                        info.flags = MediaExtractor.BUFFER_FLAG_KEY_FRAME.takeIf { extractor.sampleFlags and MediaExtractor.SAMPLE_FLAG_SYNC != 0 } ?: 0
+                        info.flags = if (extractor.sampleFlags and MediaExtractor.SAMPLE_FLAG_SYNC != 0) MediaCodec.BUFFER_FLAG_KEY_FRAME else 0
                         muxer.writeSampleData(muxIndex, buffer, info)
                     }
                     extractor.advance()
@@ -307,7 +308,13 @@ class MuraiToolsHandler(private val context: Context) : MethodChannel.MethodCall
     }
 
     private fun notifyProgress(call: MethodCall): Boolean {
-        val (id, title, text, progress, indeterminate, cancellable) = requireArgs(call, "id", "title", "text", "progress", "indeterminate", "cancellable")
+        val args = requireArgs(call, "id", "title", "text", "progress", "indeterminate", "cancellable")
+        val id = args[0] as Number
+        val title = args[1] as String
+        val text = args[2] as String
+        val progress = args[3] as Number
+        val indeterminate = args[4] as Boolean
+        val cancellable = args[5] as Boolean
         ensureChannel()
         val openIntent = PendingIntent.getActivity(context, 0, context.packageManager.getLaunchIntentForPackage(context.packageName) ?: Intent(), PendingIntent.FLAG_IMMUTABLE)
         val builder = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
