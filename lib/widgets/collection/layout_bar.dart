@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/collection_lens.dart';
+import 'package:aves/tools/sort/murai_sort_sheet.dart';
 import 'package:aves/theme/durations.dart';
 import 'package:aves/theme/icons.dart';
 import 'package:aves/theme/text.dart';
@@ -92,8 +93,9 @@ class _LayoutBarState extends State<LayoutBar> {
               _onSortFactorChange(filters);
             },
           ),
+          _buildMuraiAdvancedSortChip(filters),
           _buildSelector<EntrySectionFactor>(
-            enabled: context.select<Settings, bool>((v) => v.getEffectiveCollectionTileLayout(filters) != .calendar && v.getEffectiveCollectionSortFactor(filters) == .date),
+            enabled: context.select<Settings, bool>((v) => v.getEffectiveCollectionTileLayout(filters) != .calendar),
             categoryIcon: AIcons.section,
             dialogTitle: l10n.viewDialogGroupSectionTitle,
             values: CollectionAppBar.sectionOptions,
@@ -152,6 +154,29 @@ class _LayoutBarState extends State<LayoutBar> {
               ),
             );
           },
+        ),
+      ),
+    );
+  }
+
+  // murai: opens the advanced sort bottom sheet (10 sort types, presets, group-by)
+  Widget _buildMuraiAdvancedSortChip(Set<CollectionFilter> filters) {
+    return Padding(
+      padding: LayoutBar._chipPadding,
+      child: Center(
+        child: OutlinedButton(
+          style: _buttonStyle(context),
+          onPressed: () => MuraiSortSheet.show(context, onApplied: () {}),
+          child: ChangeHighlightText(
+            TextSpan(
+              children: [
+                IconSpan(icon: AIcons.muraiTools),
+                const TextSpan(text: AText.separator),
+                IconSpan(icon: AIcons.sort),
+              ],
+            ),
+            duration: context.read<DurationsData>().formTextStyleTransition,
+          ),
         ),
       ),
     );

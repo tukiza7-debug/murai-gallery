@@ -66,12 +66,22 @@ class const CollectionAppBar({
     .size,
     .rating,
     .duration,
+    // murai: extended sort factors
+    .dateAdded,
+    .type,
+    .resolution,
+    .location,
+    .random,
   ];
 
   static const sectionOptions = <EntrySectionFactor>[
     .album,
     .month,
     .day,
+    // murai: extended group-by factors
+    .year,
+    .type,
+    .location,
     .none,
   ];
 

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:aves/model/entry/entry.dart';
+import 'package:aves/tools/murai_channel.dart';
 import 'package:aves/model/entry/origins.dart';
 import 'package:aves/model/source/collection_source.dart';
 import 'package:aves/model/vaults/details.dart';
@@ -221,6 +222,8 @@ class Vaults {
 
   void _onLockStateChanged() {
     windowService.secureScreen(needProtection);
+    // murai: hide vault content from the recents screenshot while locked
+    unawaited(MuraiChannel.setRecentsScreenshotEnabled(enabled: !needProtection).catchError((_) => false));
     lockStateChangeNotifier.notify();
   }
 }

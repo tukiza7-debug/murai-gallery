@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:math';
 
 import 'package:aves/locale/aves_locale.dart';
 import 'package:aves/locale/calendar/calendar_utils.dart';
@@ -160,13 +161,24 @@ class CollectionLens with ChangeNotifier {
             return true;
           case .name:
           case .rating:
-            throw UnimplementedError();
+          // murai: extended group-by factors
+          case .year:
+          case .type:
+          case .location:
+            return true;
         }
       case .albumItemName:
       case .path:
         return showAlbumHeaders();
       case .rating:
         return !filters.any((f) => f is RatingFilter);
+      // murai: extended sort factors
+      case .dateAdded:
+      case .type:
+      case .resolution:
+      case .location:
+      case .random:
+        return sectionFactor != .none;
       case .size:
       case .duration:
         return false;
@@ -294,6 +306,14 @@ class CollectionLens with ChangeNotifier {
     }
   }
 
+  /// murai: seed for the `random` sort factor, stable per session until re-shuffled
+  int _randomSeed = Random().nextInt(1 << 30);
+
+  void reshuffleRandomSort() {
+    _randomSeed = Random().nextInt(1 << 30);
+    refresh();
+  }
+
   void _applySort() {
     if (fixedSort) return;
 
@@ -310,6 +330,19 @@ class CollectionLens with ChangeNotifier {
         _filteredSortedEntries.sort(AvesEntrySort.compareByDuration);
       case .path:
         _filteredSortedEntries.sort(AvesEntrySort.compareByPath);
+      // murai: extended sort factors
+      case .dateAdded:
+        _filteredSortedEntries.sort(AvesEntrySort.compareByDateAdded);
+      case .type:
+        _filteredSortedEntries.sort(AvesEntrySort.compareByType);
+      case .resolution:
+        _filteredSortedEntries.sort(AvesEntrySort.compareByResolution);
+      case .location:
+        _filteredSortedEntries.sort(AvesEntrySort.compareByLocation);
+      case .random:
+        final rng = Random(_randomSeed);
+        final ranks = {for (final entry in _filteredSortedEntries) entry: rng.nextInt(1 << 31)};
+        _filteredSortedEntries.sort((a, b) => (ranks[a] ?? 0).compareTo(ranks[b] ?? 0));
       case .chipName:
       case .count:
         throw UnimplementedError();
@@ -325,6 +358,43 @@ class CollectionLens with ChangeNotifier {
         MapEntry(const SectionKey(), _filteredSortedEntries),
       ]);
     } else {
+      // murai: extended group-by factors apply to any sort
+      switch (sectionFactor) {
+        case .year:
+          final calOps = calendar.ops;
+          sections = groupBy<AvesEntry, EntryDateSectionKey>(_filteredSortedEntries, (entry) {
+            final d = entry.bestDate;
+            if (d == null) return EntryDateSectionKey.unknown;
+            final (year, _) = calOps.getYearMonth(d);
+            return EntryDateSectionKey(year: year);
+          });
+          return;
+        case .type:
+          sections = groupBy<AvesEntry, EntryTypeSectionKey>(_filteredSortedEntries, (entry) => EntryTypeSectionKey(entry.mimeType));
+          return;
+        case .location:
+          sections = SplayTreeMap<EntryLocationSectionKey, List<AvesEntry>>.of(
+            groupBy<AvesEntry, EntryLocationSectionKey>(_filteredSortedEntries, (entry) => EntryLocationSectionKey(
+                  countryName: entry.addressDetails?.countryName,
+                  place: entry.addressDetails?.place,
+                )),
+            (a, b) {
+              final c = (a.countryName ?? '\u{10FFFF}').compareTo(b.countryName ?? '\u{10FFFF}');
+              if (c != 0) return c;
+              return (a.place ?? '\u{10FFFF}').compareTo(b.place ?? '\u{10FFFF}');
+            },
+          );
+          return;
+        case .album:
+          if (sortFactor != .albumItemName && sortFactor != .path) {
+            final byAlbum = groupBy<AvesEntry, EntryAlbumSectionKey>(_filteredSortedEntries, (entry) => EntryAlbumSectionKey(entry.directory));
+            final int Function(EntryAlbumSectionKey, EntryAlbumSectionKey) compare = sortReverse ? (a, b) => source.compareAlbumsByName(b.directory, a.directory) : (a, b) => source.compareAlbumsByName(a.directory, b.directory);
+            sections = SplayTreeMap<EntryAlbumSectionKey, List<AvesEntry>>.of(byAlbum, compare);
+            return;
+          }
+        default:
+          break;
+      }
       switch (sortFactor) {
         case .date:
           switch (sectionFactor) {
@@ -352,6 +422,9 @@ class CollectionLens with ChangeNotifier {
               ]);
             case .name:
             case .rating:
+            case .year:
+            case .type:
+            case .location:
               throw UnimplementedError();
           }
         case .albumItemName:
@@ -369,6 +442,15 @@ class CollectionLens with ChangeNotifier {
           final byAlbum = groupBy<AvesEntry, EntryAlbumSectionKey>(_filteredSortedEntries, (entry) => EntryAlbumSectionKey(entry.directory));
           final int Function(EntryAlbumSectionKey, EntryAlbumSectionKey) compare = sortReverse ? (a, b) => source.compareAlbumsByPath(b.directory, a.directory) : (a, b) => source.compareAlbumsByPath(a.directory, b.directory);
           sections = SplayTreeMap<EntryAlbumSectionKey, List<AvesEntry>>.of(byAlbum, compare);
+        // murai: extended sort factors without special sectioning
+        case .dateAdded:
+        case .type:
+        case .resolution:
+        case .location:
+        case .random:
+          sections = Map.fromEntries([
+            MapEntry(const SectionKey(), _filteredSortedEntries),
+          ]);
         case .chipName:
         case .count:
           throw UnimplementedError();

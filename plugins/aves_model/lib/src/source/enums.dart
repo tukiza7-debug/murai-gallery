@@ -12,6 +12,12 @@ enum SortFactor {
   albumItemName,
   rating,
   duration,
+  // murai: extended sort factors
+  dateAdded,
+  type,
+  resolution,
+  location,
+  random,
 }
 
 enum ChipSectionFactor { none, importance, mimeType, volume }
@@ -24,6 +30,10 @@ enum EntrySectionFactor {
   // unselectable, used by some sort factors
   name,
   rating,
+  // murai: extended group-by factors
+  year,
+  type,
+  location,
 }
 
 enum TileLayout { mosaic, grid, list, calendar }

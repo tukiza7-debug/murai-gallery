@@ -742,7 +742,11 @@ class _CollectionScrollViewState extends State<_CollectionScrollView> with Widge
             break;
           case .name:
           case .rating:
-            throw UnimplementedError();
+          // murai: extended group-by factors have no date crumbs
+          case .year:
+          case .type:
+          case .location:
+            break;
         }
       case .albumItemName:
       case .path:
@@ -750,6 +754,13 @@ class _CollectionScrollViewState extends State<_CollectionScrollView> with Widge
       case .rating:
       case .size:
       case .duration:
+        break;
+      // murai: extended sort factors
+      case .dateAdded:
+      case .type:
+      case .resolution:
+      case .location:
+      case .random:
         break;
       case .chipName:
       case .count:

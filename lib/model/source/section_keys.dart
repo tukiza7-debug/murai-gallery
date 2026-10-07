@@ -34,3 +34,21 @@ class EntryRatingSectionKey extends SectionKey with Equatable {
 
   const new(this.rating);
 }
+
+class EntryTypeSectionKey extends SectionKey with Equatable {
+  final String mimeType;
+
+  @override
+  List<Object?> get props => [mimeType];
+
+  const new(this.mimeType);
+}
+
+class EntryLocationSectionKey extends SectionKey with Equatable {
+  final String? countryName, place;
+
+  @override
+  List<Object?> get props => [countryName, place];
+
+  const new({this.countryName, this.place});
+}

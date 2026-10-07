@@ -26,7 +26,9 @@
   "welcomeTermsToggle": "আমি সর্তাবলিগুলোতে একমত",
   "@welcomeTermsToggle": {},
   "appName": "Murai Gallery",
-  "@appName": "Murai Gallery",
+  "@appName": {
+    "description": "Murai Gallery"
+  },
   "applyButtonLabel": "প্রয়োগ করুন",
   "@applyButtonLabel": {},
   "deleteButtonLabel": "ডিলিট",

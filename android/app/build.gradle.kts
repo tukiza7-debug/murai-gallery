@@ -228,6 +228,7 @@ dependencies {
     implementation(libs.androidx.work.runtime)
 
     implementation(libs.commonsware.cwac)
+    implementation(libs.zxing.core)
     implementation(libs.metadata.extractor)
     implementation(libs.glide)
     implementation(libs.google.material)

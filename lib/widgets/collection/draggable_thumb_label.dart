@@ -40,7 +40,11 @@ class const CollectionDraggableThumbLabel({
                 ];
               case .name:
               case .rating:
-                throw UnimplementedError();
+              // murai: extended group-by factors
+              case .year:
+              case .type:
+              case .location:
+                return [];
             }
           case .albumItemName:
             return [
@@ -70,6 +74,24 @@ class const CollectionDraggableThumbLabel({
               if (_showAlbumName(context, entry)) _getAlbumName(context, entry),
               ?entryFileName,
             ];
+          case .dateAdded:
+            return [
+              DraggableThumbLabel.formatMonthThumbLabel(context, settings.avesLocale, entry.bestDate),
+            ];
+          case .type:
+            return [
+              if (entry.extension != null) entry.extension!.toUpperCase(),
+            ];
+          case .resolution:
+            return [
+              if (entry.width > 0) '${entry.width}×${entry.height}',
+            ];
+          case .location:
+            return [
+              ?entry.addressDetails?.place,
+            ];
+          case .random:
+            return [];
           case .chipName:
           case .count:
             throw UnimplementedError();

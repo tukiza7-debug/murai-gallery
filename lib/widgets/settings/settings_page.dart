@@ -6,6 +6,7 @@ import 'package:aves/widgets/settings/display/display.dart';
 import 'package:aves/widgets/settings/language/language.dart';
 import 'package:aves/widgets/settings/navigation/navigation.dart';
 import 'package:aves/widgets/settings/privacy/privacy.dart';
+import 'package:aves/widgets/settings/murai/murai_section.dart';
 import 'package:aves/widgets/settings/settings_definition.dart';
 import 'package:aves/widgets/settings/settings_mobile_page.dart';
 import 'package:aves/widgets/settings/settings_tv_page.dart';
@@ -29,6 +30,7 @@ class SettingsPage extends StatelessWidget {
     AccessibilitySection(),
     DisplaySection(),
     LanguageSection(),
+    MuraiSection(),
   ];
 
   const new({super.key});

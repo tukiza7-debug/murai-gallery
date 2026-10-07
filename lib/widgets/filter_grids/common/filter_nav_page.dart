@@ -115,6 +115,13 @@ class FilterNavigationPage<T extends CollectionFilter, CSAD extends ChipSetActio
         allMapEntries = toGridItem(source, filters);
       case .path:
         allMapEntries = toGridItem(source, filters)..sort(compareFiltersByPath);
+      // murai: extended sort factors fall back to name ordering
+      case .dateAdded:
+      case .type:
+      case .resolution:
+      case .location:
+      case .random:
+        allMapEntries = toGridItem(source, filters)..sort(compareFiltersByName);
       case .albumItemName:
       case .rating:
       case .duration:

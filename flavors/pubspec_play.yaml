@@ -66,6 +66,7 @@ dependencies:
     path: plugins/aves_ui
   aves_utils:
     path: plugins/aves_utils
+  archive:
   collection:
   community_charts_flutter:
     git:
@@ -74,6 +75,7 @@ dependencies:
       path: community_charts_flutter
   connectivity_plus:
   country_code:
+  crypto:
   csv:
   device_info_plus:
   dlna_dart:
@@ -105,9 +107,11 @@ dependencies:
       url: https://github.com/deckerst/flutter_staggered_animations
       ref: aves
   get_it:
+  google_mlkit_text_recognition:
   gpx:
   highlight:
   http:
+  image:
   intl:
   intl4x:
   latlong2:

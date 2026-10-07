@@ -108,6 +108,7 @@ dependencies:
   gpx:
   highlight:
   http:
+  image:
   intl:
   intl4x:
   latlong2:

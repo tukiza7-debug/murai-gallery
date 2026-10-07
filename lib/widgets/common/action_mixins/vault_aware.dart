@@ -3,6 +3,8 @@ import 'package:aves/model/filters/filters.dart';
 import 'package:aves/model/vaults/details.dart';
 import 'package:aves/model/vaults/vaults.dart';
 import 'package:aves/services/common/services.dart';
+import 'package:aves/tools/murai_prefs.dart';
+import 'package:aves/tools/vault/vault_config_page.dart';
 import 'package:aves/widgets/common/action_mixins/feedback.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves/widgets/dialogs/aves_dialog.dart';
@@ -50,7 +52,16 @@ mixin VaultAwareMixin on FeedbackMixin {
           routeSettings: const RouteSettings(name: PinDialog.routeName),
         );
         if (pin != null) {
-          confirmed = pin == await securityService.readValue(details.passKey);
+          final stored = await securityService.readValue(details.passKey);
+          confirmed = pin == stored;
+          // murai: decoy PIN opens a harmless fake page instead of unlocking
+          if (confirmed != true && stored != null && stored.isNotEmpty) {
+            final decoy = await securityService.readValue('murai_vault_decoy_pin');
+            if (decoy != null && decoy.isNotEmpty && pin == decoy && MuraiPrefs.getVaultDecoyEnabled() && context.mounted) {
+              confirmed = false;
+              Navigator.of(context).push(MaterialPageRoute(builder: (context) => const MuraiDecoyPage()));
+            }
+          }
         }
       case .password:
         final password = await showAvesDialog<String>(

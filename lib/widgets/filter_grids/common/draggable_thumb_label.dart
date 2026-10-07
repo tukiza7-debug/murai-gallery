@@ -41,6 +41,12 @@ class FilterDraggableThumbLabel<T extends CollectionFilter> extends StatelessWid
             return [
               formatFileSize(settings.avesLocale, context.read<CollectionSource>().size(filterGridItem.filter)),
             ];
+          // murai: extended sort factors are not used by filter grids
+          case .dateAdded:
+          case .type:
+          case .resolution:
+          case .location:
+          case .random:
           case .albumItemName:
           case .rating:
           case .duration:

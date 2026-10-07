@@ -11,6 +11,7 @@ import 'package:aves/model/settings/settings.dart';
 import 'package:aves/model/source/collection_lens.dart';
 import 'package:aves/model/source/collection_source.dart';
 import 'package:aves/theme/durations.dart';
+import 'package:aves/tools/home_tools_strip.dart';
 import 'package:aves/view/view.dart';
 import 'package:aves/widgets/collection/collection_grid.dart';
 import 'package:aves/widgets/collection/entry_set_action_delegate.dart';
@@ -106,10 +107,19 @@ class _CollectionPageState extends State<CollectionPage> {
                       start: !useTvLayout,
                       top: false,
                       bottom: false,
-                      child: const CollectionGrid(
-                        // key is expected by test driver
-                        key: Key('collection-grid'),
-                        settingsRouteKey: CollectionPage.routeName,
+                      child: Column(
+                        children: [
+                          // murai: tools strip on the unfiltered home page
+                          if (_collection.filters.isEmpty && _collection.fixedSelection == null && !useTvLayout)
+                            const MuraiHomeToolsStrip(),
+                          const Expanded(
+                            child: CollectionGrid(
+                              // key is expected by test driver
+                              key: Key('collection-grid'),
+                              settingsRouteKey: CollectionPage.routeName,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),

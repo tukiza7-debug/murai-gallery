@@ -21,6 +21,8 @@ import 'package:aves/ref/locales.dart';
 import 'package:aves/ref/mime_types.dart';
 import 'package:aves/services/accessibility_service.dart';
 import 'package:aves/services/common/services.dart';
+import 'package:aves/tools/errors/error_logger.dart';
+import 'package:aves/tools/update/update_check.dart';
 import 'package:aves/theme/colors.dart';
 import 'package:aves/theme/icons.dart';
 import 'package:aves/theme/styles.dart';
@@ -521,7 +523,16 @@ class _AvesAppState extends State<AvesApp> with WidgetsBindingObserver {
         );
     await reportService.setCollectionEnabled(settings.isErrorReportingAllowed);
 
-    FlutterError.onError = reportService.recordFlutterError;
+    FlutterError.onError = (details) {
+      MuraiErrorLogger.instance.recordFlutterError(details);
+      reportService.recordFlutterError(details);
+    };
+    unawaited(MuraiErrorLogger.instance.init());
+    // murai: periodic in-app update check (GitHub Releases)
+    Future.delayed(const Duration(seconds: 8), () async {
+      if (!mounted) return;
+      await MuraiUpdater.checkOnStartup(context);
+    });
     final now = DateTime.now();
     await reportService.setCustomKeys({
       'build_mode': kReleaseMode

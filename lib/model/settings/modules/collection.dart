@@ -145,9 +145,15 @@ mixin CollectionSettings on SettingsAccess, CommonLayoutSettings {
           case .albumItemName:
           case .path:
             return .name;
+          // murai: let users combine any group-by with size/duration/extended sorts
           case .size:
           case .duration:
-            return .none;
+          case .dateAdded:
+          case .type:
+          case .resolution:
+          case .location:
+          case .random:
+            return getStoredCollectionSectionFactor(filters);
           case .rating:
             return .rating;
           case .chipName:

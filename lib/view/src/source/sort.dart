@@ -2,6 +2,7 @@ import 'package:aves/theme/icons.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
 import 'package:aves_model/aves_model.dart';
 import 'package:flutter/widgets.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 extension ExtraEntrySortFactorView on SortFactor {
   String getName(BuildContext context) {
@@ -15,6 +16,12 @@ extension ExtraEntrySortFactorView on SortFactor {
       .path => l10n.sortByPath,
       .rating => l10n.sortByRating,
       .duration => l10n.sortByDuration,
+      // murai: extended sort factors
+      .dateAdded => l10n.muraiSortByDateAdded,
+      .type => l10n.muraiSortByType,
+      .resolution => l10n.muraiSortByResolution,
+      .location => l10n.muraiSortByLocation,
+      .random => l10n.muraiSortByRandom,
     };
   }
 
@@ -28,6 +35,12 @@ extension ExtraEntrySortFactorView on SortFactor {
       .path => AIcons.path,
       .rating => AIcons.rating,
       .duration => AIcons.duration,
+      // murai: extended sort factors
+      .dateAdded => Symbols.today,
+      .type => Symbols.folder,
+      .resolution => Symbols.photo_size_select_large,
+      .location => Symbols.place,
+      .random => Symbols.shuffle,
     };
   }
 
@@ -39,6 +52,12 @@ extension ExtraEntrySortFactorView on SortFactor {
       .count || .size => reverse ? l10n.sortOrderSmallestFirst : l10n.sortOrderLargestFirst,
       .rating => reverse ? l10n.sortOrderLowestFirst : l10n.sortOrderHighestFirst,
       .duration => reverse ? l10n.sortOrderShortestFirst : l10n.sortOrderLongestFirst,
+      // murai: extended sort factors
+      .dateAdded => reverse ? l10n.muraiSortOrderOldestAddedFirst : l10n.muraiSortOrderNewestAddedFirst,
+      .type => reverse ? l10n.sortOrderZtoA : l10n.sortOrderAtoZ,
+      .resolution => reverse ? l10n.muraiSortOrderSmallestFirst : l10n.muraiSortOrderLargestFirst,
+      .location => reverse ? l10n.sortOrderZtoA : l10n.sortOrderAtoZ,
+      .random => l10n.muraiSortOrderRandom,
     };
   }
 }

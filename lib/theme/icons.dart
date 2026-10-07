@@ -41,6 +41,7 @@ class AIcons {
   static const important = IconData(labelImportantOutlineCodePoint, fontFamily: materialIconsFontFamily, matchTextDirection: true);
 
   static const language = Symbols.translate;
+  static const muraiTools = Symbols.handyman;
   static const legal = MdiIcons.scaleBalance;
   static const mimeType = Symbols.code;
   static const minimap = Symbols.picture_in_picture;

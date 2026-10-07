@@ -26,6 +26,7 @@ mp4parser = "c2898f1832"
 pixymeta = "f4513291b7"
 slf4j = "2.0.20"
 tiffBitmapFactory = "424b18a4ae"
+zxing = "3.5.3"
 reproducibleBuilds = "1.1"
 
 [libraries]
@@ -38,6 +39,7 @@ androidx-lifecycle = { module = "androidx.lifecycle:lifecycle-process", version.
 androidx-media = { module = "androidx.media:media", version.ref = "androidxMedia" }
 androidx-security-crypto = { module = "androidx.security:security-crypto", version.ref = "androidxSecurity" }
 androidx-work-runtime = { module = "androidx.work:work-runtime", version.ref = "androidxWork" }
+zxing-core = { module = "com.google.zxing:core", version.ref = "zxing" }
 commonsware-cwac = { module = "com.commonsware.cwac:document", version.ref = "commonswareCwac" }
 deckerst-androidsvg = { module = "com.github.deckerst:androidsvg", version.ref = "androidSvg" }
 deckerst-mp4parser-isoparser = { module = "com.github.deckerst.mp4parser:isoparser", version.ref = "mp4parser" }

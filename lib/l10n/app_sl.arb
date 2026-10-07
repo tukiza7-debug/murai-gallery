@@ -1,6 +1,8 @@
 {
   "appName": "Murai Gallery",
-  "@appName": "Murai Gallery",
+  "@appName": {
+    "description": "Murai Gallery"
+  },
   "welcomeMessage": "Dobrodošli v Avesu",
   "@welcomeMessage": {},
   "welcomeOptional": "Izbirno",

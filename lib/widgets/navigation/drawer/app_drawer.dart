@@ -12,6 +12,7 @@ import 'package:aves/ref/locales.dart';
 import 'package:aves/services/common/services.dart';
 import 'package:aves/theme/durations.dart';
 import 'package:aves/theme/icons.dart';
+import 'package:aves/tools/tools_page.dart';
 import 'package:aves/utils/android_file_utils.dart';
 import 'package:aves/utils/file_utils.dart';
 import 'package:aves/widgets/about/about_page.dart';
@@ -123,6 +124,7 @@ class _AppDrawerState extends State<AppDrawer> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final drawerItems = <Widget>[
       _buildHeader(context),
+      _buildMuraiToolsLink(context),
       _buildHomeLink(),
       ..._buildTypeLinks(),
       _buildAlbumLinks(context),
@@ -362,6 +364,20 @@ class _AppDrawerState extends State<AppDrawer> with WidgetsBindingObserver {
           ],
         );
       },
+    );
+  }
+
+  Widget _buildMuraiToolsLink(BuildContext context) {
+    return Column(
+      children: [
+        ListTile(
+          leading: const Icon(AIcons.muraiTools),
+          title: Text(context.l10n.muraiToolsTitle),
+          subtitle: Text(context.l10n.muraiToolsHint, maxLines: 1, overflow: TextOverflow.ellipsis),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => const MuraiToolsPage())),
+        ),
+        const Divider(),
+      ],
     );
   }
 

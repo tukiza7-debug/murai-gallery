@@ -3,5 +3,7 @@
   "welcomeMessage": "ᱮᱣᱥ ᱨᱮ ᱥᱟᱹᱜᱩᱱ ᱫᱟᱨᱟᱢ",
   "@welcomeMessage": {},
   "appName": "Murai Gallery",
-  "@appName": "Murai Gallery"
+  "@appName": {
+    "description": "Murai Gallery"
+  }
 }
