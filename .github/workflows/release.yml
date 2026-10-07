@@ -27,10 +27,17 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Set up Android NDK
+      - name: Verify Android NDK
         run: |
-          "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" --install "ndk;28.2.13676358" > /dev/null
-          yes | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          NDK_VERSION=28.2.13676358
+          NDK_DIR="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}/ndk/$NDK_VERSION"
+          if [ ! -d "$NDK_DIR" ]; then
+            echo "NDK $NDK_VERSION not preinstalled; installing..."
+            yes | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+            "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" --install "ndk;$NDK_VERSION"
+          fi
+          test -d "$NDK_DIR"
+          echo "NDK ready at $NDK_DIR"
 
       - name: Flutter bootstrap
         run: |
