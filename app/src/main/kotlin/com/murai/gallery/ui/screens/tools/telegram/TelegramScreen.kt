@@ -28,6 +28,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.murai.gallery.R
 import com.murai.gallery.di.AppContainer
 import com.murai.gallery.domain.telegram.TelegramClient
+import com.murai.gallery.ui.components.launchSafely
 import com.murai.gallery.ui.components.ToolScaffold
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -50,7 +51,7 @@ class TelegramViewModel(
     var asDocument = MutableStateFlow(false)
 
     fun load() {
-        viewModelScope.launch {
+        launchSafely(appContext, "telegram") {
             val token = container.settings.telegramToken.first()
             val chat = container.settings.telegramChat.first()
             config.value = token to chat
@@ -58,17 +59,17 @@ class TelegramViewModel(
     }
 
     fun saveConfig(token: String, chat: String) {
-        viewModelScope.launch { container.settings.setTelegram(token, chat) }
+        launchSafely(appContext, "telegram") { container.settings.setTelegram(token, chat) }
     }
 
     fun sendLatest() {
-        viewModelScope.launch {
+        launchSafely(appContext, "telegram") {
             state.value = TelegramState(sending = true)
             val (token, chat) = config.value
             val client = TelegramClient(appContext, token, chat)
             val latest = container.db.libraryDao().recent(1).firstOrNull() ?: run {
                 state.value = TelegramState(error = "empty")
-                return@launch
+                return@launchSafely
             }
             val result = client.send(
                 itemUri = Uri.parse(latest.uri),

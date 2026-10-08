@@ -42,6 +42,7 @@ import com.murai.gallery.R
 import com.murai.gallery.data.db.entity.LibraryItemEntity
 import com.murai.gallery.di.AppContainer
 import com.murai.gallery.domain.hash.Hashing
+import com.murai.gallery.ui.components.launchSafely
 import com.murai.gallery.ui.components.ConfirmDialog
 import com.murai.gallery.ui.components.EmptyState
 import com.murai.gallery.ui.components.ProgressOverlay
@@ -77,7 +78,7 @@ class DuplicatesViewModel(private val container: AppContainer) : ViewModel() {
     val state = MutableStateFlow(DuplicatesUiState())
 
     fun scan() {
-        viewModelScope.launch {
+        launchSafely(container.appContext, "duplicates") {
             state.value = state.value.copy(scanning = true, groups = emptyList())
             val all = container.db.libraryDao().sortKeyRows()
                 .filter { !it.isVideo && it.width > 0 }
@@ -149,12 +150,12 @@ class DuplicatesViewModel(private val container: AppContainer) : ViewModel() {
 
     fun confirmDelete() {
         val ids = state.value.confirmDelete ?: return
-        viewModelScope.launch {
+        launchSafely(container.appContext, "duplicates") {
             val entities = container.db.libraryDao().byIds(ids)
             val result = container.operations.trash(entities)
             if (result.consent != null) {
                 ConsentBus.request(result.consent) { granted ->
-                    if (granted) viewModelScope.launch {
+                    if (granted) launchSafely(container.appContext, "duplicates") {
                         container.db.libraryDao().setTrashed(ids, true)
                         state.value = state.value.copy(confirmDelete = null)
                     }

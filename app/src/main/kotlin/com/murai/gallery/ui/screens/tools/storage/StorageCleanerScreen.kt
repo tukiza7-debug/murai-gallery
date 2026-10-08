@@ -23,6 +23,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.murai.gallery.R
 import com.murai.gallery.di.AppContainer
+import com.murai.gallery.ui.components.launchSafely
 import com.murai.gallery.ui.components.ConfirmDialog
 import com.murai.gallery.ui.components.ProgressOverlay
 import com.murai.gallery.ui.components.ToolScaffold
@@ -49,7 +50,7 @@ class CleanerViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     fun load() {
-        viewModelScope.launch {
+        launchSafely(container.appContext, "cleaner") {
             val folders = container.repository.folderUsage()
                 .map { Triple(it.folder, it.c, it.bytes) }
             val big = container.repository.biggestFiles(10 * 1024 * 1024, 15)
@@ -69,12 +70,12 @@ class CleanerViewModel(private val container: AppContainer) : ViewModel() {
 
     fun confirmDelete() {
         val ids = state.value.confirmDelete ?: return
-        viewModelScope.launch {
+        launchSafely(container.appContext, "cleaner") {
             val entities = container.db.libraryDao().byIds(ids)
             val result = container.operations.trash(entities)
             if (result.consent != null) {
                 ConsentBus.request(result.consent) { granted ->
-                    if (granted) viewModelScope.launch {
+                    if (granted) launchSafely(container.appContext, "cleaner") {
                         container.db.libraryDao().setTrashed(ids, true)
                         state.value = state.value.copy(
                             confirmDelete = null,

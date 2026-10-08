@@ -37,6 +37,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.murai.gallery.R
 import com.murai.gallery.di.AppContainer
+import com.murai.gallery.ui.components.launchSafely
 import com.murai.gallery.ui.components.EmptyState
 import com.murai.gallery.ui.components.MediaThumb
 import com.murai.gallery.util.ConsentBus
@@ -50,12 +51,12 @@ class BinViewModel(private val container: AppContainer) : ViewModel() {
         container.repository.observeBin().stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     fun restore(ids: List<Long>) {
-        viewModelScope.launch {
+        launchSafely(container.appContext, "bin") {
             val entities = container.db.libraryDao().byIds(ids)
             val result = container.operations.restore(entities)
             if (result.consent != null) {
                 ConsentBus.request(result.consent) { granted ->
-                    if (granted) viewModelScope.launch {
+                    if (granted) launchSafely(container.appContext, "bin") {
                         container.db.libraryDao().setTrashed(ids, false)
                     }
                 }
@@ -64,12 +65,12 @@ class BinViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     fun deleteForever(ids: List<Long>, onDone: () -> Unit) {
-        viewModelScope.launch {
+        launchSafely(container.appContext, "bin") {
             val entities = container.db.libraryDao().byIds(ids)
             val result = container.operations.deleteForever(entities)
             if (result.consent != null) {
                 ConsentBus.request(result.consent) { granted ->
-                    if (granted) viewModelScope.launch {
+                    if (granted) launchSafely(container.appContext, "bin") {
                         container.db.libraryDao().deleteByIds(ids)
                         onDone()
                     }

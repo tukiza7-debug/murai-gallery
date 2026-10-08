@@ -24,6 +24,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.murai.gallery.R
 import com.murai.gallery.di.AppContainer
 import com.murai.gallery.domain.backup.BackupManager
+import com.murai.gallery.ui.components.launchSafely
 import com.murai.gallery.ui.components.ProgressOverlay
 import com.murai.gallery.ui.components.ToolScaffold
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -49,7 +50,7 @@ class BackupViewModel(private val container: AppContainer) : ViewModel() {
     fun suggestName(): String = manager.suggestFileName()
 
     fun exportTo(uri: android.net.Uri) {
-        viewModelScope.launch {
+        launchSafely(container.appContext, "backup") {
             state.value = BackupState(working = true)
             val ok = runCatching {
                 container.appContext.contentResolver.openOutputStream(uri)?.use { out ->
@@ -64,7 +65,7 @@ class BackupViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     fun importFrom(uri: android.net.Uri) {
-        viewModelScope.launch {
+        launchSafely(container.appContext, "backup") {
             state.value = BackupState(working = true)
             val summary = runCatching {
                 container.appContext.contentResolver.openInputStream(uri)?.use { input ->

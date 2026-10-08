@@ -27,6 +27,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.murai.gallery.R
 import com.murai.gallery.di.AppContainer
 import com.murai.gallery.domain.barcode.BarcodeEngine
+import com.murai.gallery.ui.components.launchSafely
 import com.murai.gallery.ui.components.ProgressOverlay
 import com.murai.gallery.ui.components.ToolScaffold
 import kotlinx.coroutines.Dispatchers
@@ -51,7 +52,7 @@ class QrViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     fun loadLatest() {
-        viewModelScope.launch {
+        launchSafely(container.appContext, "qr") {
             val latest = container.db.libraryDao().recent(1).firstOrNull { !it.isVideo }
             state.value = QrState(target = latest?.uri)
         }
@@ -59,7 +60,7 @@ class QrViewModel(private val container: AppContainer) : ViewModel() {
 
     fun decode(context: Context) {
         val target = state.value.target ?: return
-        viewModelScope.launch {
+        launchSafely(container.appContext, "qr") {
             state.value = state.value.copy(running = true, notFound = false)
             val result = withContext(Dispatchers.IO) {
                 runCatching { BarcodeEngine.decode(context, Uri.parse(target)) }.getOrNull()

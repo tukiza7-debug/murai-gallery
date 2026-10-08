@@ -27,6 +27,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.murai.gallery.R
 import com.murai.gallery.di.AppContainer
+import com.murai.gallery.ui.components.launchSafely
 import com.murai.gallery.ui.components.ToolScaffold
 import com.murai.gallery.work.WallpaperWorker
 import kotlinx.coroutines.flow.first
@@ -45,7 +46,7 @@ class WallpaperViewModel(
     val selected = container.settings.wallpaperAlbums
 
     fun toggleEnabled(v: Boolean) {
-        viewModelScope.launch {
+        launchSafely(container.appContext, "wallpaper") {
             container.settings.setWallpaperEnabled(v)
             if (v) {
                 val hours = container.settings.wallpaperIntervalHours.first()
@@ -57,11 +58,11 @@ class WallpaperViewModel(
     }
 
     fun toggleBoth(v: Boolean) {
-        viewModelScope.launch { container.settings.setWallpaperBoth(v) }
+        launchSafely(container.appContext, "wallpaper") { container.settings.setWallpaperBoth(v) }
     }
 
     fun setInterval(hours: Int) {
-        viewModelScope.launch {
+        launchSafely(container.appContext, "wallpaper") {
             container.settings.setWallpaperInterval(hours)
             if (container.settings.wallpaperEnabled.first()) {
                 WallpaperWorker.schedule(appContext, hours)
@@ -70,7 +71,7 @@ class WallpaperViewModel(
     }
 
     fun toggleAlbum(bucketId: String) {
-        viewModelScope.launch {
+        launchSafely(container.appContext, "wallpaper") {
             val current = container.settings.wallpaperAlbums.first()
             val next = if (bucketId in current) current - bucketId else current + bucketId
             container.settings.setWallpaperAlbums(next)

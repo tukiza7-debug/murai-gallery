@@ -30,6 +30,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.murai.gallery.R
 import com.murai.gallery.di.AppContainer
 import com.murai.gallery.domain.ocr.OcrEngine
+import com.murai.gallery.ui.components.launchSafely
 import com.murai.gallery.ui.components.ProgressOverlay
 import com.murai.gallery.ui.components.ToolScaffold
 import com.murai.gallery.util.ShareHelper
@@ -50,7 +51,7 @@ class OcrViewModel(private val container: AppContainer) : ViewModel() {
     val state = MutableStateFlow(OcrState())
 
     fun loadLatestImage() {
-        viewModelScope.launch {
+        launchSafely(container.appContext, "ocr") {
             val latest = container.db.libraryDao().recent(1).firstOrNull { !it.isVideo }
             state.value = OcrState(target = latest?.uri)
         }
@@ -62,7 +63,7 @@ class OcrViewModel(private val container: AppContainer) : ViewModel() {
 
     fun run(context: Context) {
         val target = state.value.target ?: return
-        viewModelScope.launch {
+        launchSafely(container.appContext, "ocr") {
             state.value = state.value.copy(running = true, text = "", error = false)
             val result = withContext(Dispatchers.IO) {
                 runCatching { OcrEngine.recognize(context, Uri.parse(target)) }

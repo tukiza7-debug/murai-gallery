@@ -13,6 +13,11 @@ import java.io.File
  * The secure vault stores AES/GCM-encrypted copies of chosen media inside
  * app-private storage. Move-out decrypts and re-inserts the item into the
  * public gallery through MediaStore.
+ *
+ * v2.0.1: every transfer streams through [VaultCrypto] containers — media
+ * bytes are never held in a byte array, so moving a 2 GB video in or out no
+ * longer risks an OOM kill. Old whole-buffer files keep decrypting thanks to
+ * legacy-format detection in the crypto layer.
  */
 class VaultRepository(
     private val context: Context,
@@ -28,11 +33,18 @@ class VaultRepository(
         withContext(Dispatchers.IO) {
             try {
                 val srcUri = android.net.Uri.parse(item.uri)
-                val bytes = context.contentResolver.openInputStream(srcUri)?.use { it.readBytes() }
-                    ?: return@withContext false
-                val enc = VaultCrypto.encrypt(bytes)
                 val encFile = File(vaultDir, "v_${System.nanoTime()}.enc")
-                encFile.writeBytes(enc)
+                var wrote = false
+                context.contentResolver.openInputStream(srcUri)?.use { input ->
+                    encFile.outputStream().use { out ->
+                        VaultCrypto.encryptStreamKeystore(input, out)
+                        wrote = true
+                    }
+                }
+                if (!wrote) {
+                    encFile.delete()
+                    return@withContext false
+                }
                 dao.insert(
                     VaultEntryEntity(
                         encPath = encFile.absolutePath,
@@ -56,11 +68,13 @@ class VaultRepository(
             try {
                 val encFile = File(entry.encPath)
                 if (!encFile.exists()) return@withContext false
-                val plain = VaultCrypto.decrypt(encFile.readBytes())
                 val ops = MediaOperationsForVault(context)
-                val inserted = ops.insertBytes(
-                    plain, folder, entry.origName, entry.isVideo, entry.mime
-                )
+                // Stream-decrypt straight into the MediaStore output stream.
+                val inserted = ops.insertFromStream(entry.isVideo, folder, entry.origName, entry.mime) { out ->
+                    encFile.inputStream().use { input ->
+                        VaultCrypto.decryptStreamKeystore(input, out)
+                    }
+                }
                 if (inserted != null) {
                     encFile.delete()
                     dao.delete(entry.id)
@@ -77,14 +91,17 @@ class VaultRepository(
         dao.delete(entry.id)
     }
 
-    /** Exposes an original decrypted stream for in-app viewing. */
+    /** Exposes an original decrypted copy for in-app viewing (streamed). */
     fun openDecrypted(entry: VaultEntryEntity, cacheDir: File): File? = runCatching {
         val encFile = File(entry.encPath)
         if (!encFile.exists()) return null
-        val plain = VaultCrypto.decrypt(encFile.readBytes())
         val ext = entry.origName.substringAfterLast('.', "jpg")
         val out = File(cacheDir, "vault_view_${entry.id}.$ext")
-        out.writeBytes(plain)
+        encFile.inputStream().use { input ->
+            out.outputStream().use { output ->
+                VaultCrypto.decryptStreamKeystore(input, output)
+            }
+        }
         out
     }.getOrNull()
 
@@ -103,12 +120,17 @@ class VaultRepository(
 
 /** Narrow helper so the vault never depends on the full operations class. */
 private class MediaOperationsForVault(private val context: Context) {
-    suspend fun insertBytes(
-        bytes: ByteArray,
+
+    /**
+     * Inserts a new MediaStore row and lets [fill] stream the (decrypted)
+     * payload into its output stream, keeping memory flat for big files.
+     */
+    suspend fun insertFromStream(
+        isVideo: Boolean,
         folder: String,
         name: String,
-        isVideo: Boolean,
-        mime: String
+        mime: String,
+        fill: (java.io.OutputStream) -> Unit
     ): android.net.Uri? = withContext(Dispatchers.IO) {
         try {
             val collection = if (isVideo)
@@ -128,13 +150,21 @@ private class MediaOperationsForVault(private val context: Context) {
             }
             val resolver = context.contentResolver
             val uri = resolver.insert(collection, values) ?: return@withContext null
-            resolver.openOutputStream(uri)?.use { it.write(bytes) } ?: return@withContext null
-            if (android.os.Build.VERSION.SDK_INT >= 29) {
-                resolver.update(uri, android.content.ContentValues().apply {
-                    put(android.provider.MediaStore.MediaColumns.IS_PENDING, 0)
-                }, null, null)
+            try {
+                resolver.openOutputStream(uri)?.use { fill(it) } ?: run {
+                    resolver.delete(uri, null, null)
+                    return@withContext null
+                }
+                if (android.os.Build.VERSION.SDK_INT >= 29) {
+                    resolver.update(uri, android.content.ContentValues().apply {
+                        put(android.provider.MediaStore.MediaColumns.IS_PENDING, 0)
+                    }, null, null)
+                }
+                uri
+            } catch (t: Throwable) {
+                runCatching { resolver.delete(uri, null, null) }
+                throw t
             }
-            uri
         } catch (t: Throwable) {
             null
         }

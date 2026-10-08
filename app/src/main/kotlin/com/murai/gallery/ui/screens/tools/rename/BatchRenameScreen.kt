@@ -26,6 +26,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.murai.gallery.R
 import com.murai.gallery.di.AppContainer
+import com.murai.gallery.ui.components.launchSafely
 import com.murai.gallery.ui.components.ProgressOverlay
 import com.murai.gallery.ui.components.ToolScaffold
 import kotlinx.coroutines.Dispatchers
@@ -64,7 +65,7 @@ class RenameViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     fun preview() {
-        viewModelScope.launch {
+        launchSafely(container.appContext, "rename") {
             val s = state.value
             val items = container.db.libraryDao().recent(50)
             val fmt = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US)
@@ -88,7 +89,7 @@ class RenameViewModel(private val container: AppContainer) : ViewModel() {
 
     fun apply(context: Context) {
         val s = state.value
-        viewModelScope.launch {
+        launchSafely(container.appContext, "rename") {
             state.value = s.copy(working = true)
             var ok = 0
             withContext(Dispatchers.IO) {

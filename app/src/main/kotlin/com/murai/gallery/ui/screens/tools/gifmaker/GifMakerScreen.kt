@@ -30,6 +30,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.murai.gallery.R
 import com.murai.gallery.di.AppContainer
 import com.murai.gallery.domain.gif.GifEncoder
+import com.murai.gallery.ui.components.launchSafely
 import com.murai.gallery.ui.components.ProgressOverlay
 import com.murai.gallery.ui.components.ToolScaffold
 import kotlinx.coroutines.Dispatchers
@@ -68,7 +69,7 @@ class GifViewModel(private val container: AppContainer) : ViewModel() {
 
     fun makeAndSave(context: Context) {
         val s = state.value
-        viewModelScope.launch {
+        launchSafely(container.appContext, "gif") {
             state.value = s.copy(working = true, error = false, saved = false)
             val result = withContext(Dispatchers.IO) {
                 runCatching {

@@ -29,6 +29,7 @@ import coil.compose.AsyncImage
 import com.murai.gallery.R
 import com.murai.gallery.di.AppContainer
 import com.murai.gallery.domain.video.VideoTrimmer
+import com.murai.gallery.ui.components.launchSafely
 import com.murai.gallery.ui.components.ToolScaffold
 import com.murai.gallery.ui.components.ProgressOverlay
 import com.murai.gallery.util.Formatters
@@ -50,7 +51,7 @@ class TrimmerViewModel(private val container: AppContainer) : ViewModel() {
     val state = MutableStateFlow(TrimmerState())
 
     fun load(context: Context, uriOrPath: String) {
-        viewModelScope.launch {
+        launchSafely(container.appContext, "trimmer") {
             val uri = if (uriOrPath.startsWith("content:")) Uri.parse(uriOrPath)
             else Uri.fromFile(File(uriOrPath))
             val duration = VideoTrimmer.probeDurationMs(context, uri)
@@ -69,7 +70,7 @@ class TrimmerViewModel(private val container: AppContainer) : ViewModel() {
     fun save(context: Context) {
         val s = state.value
         val uri = s.uri ?: return
-        viewModelScope.launch {
+        launchSafely(container.appContext, "trimmer") {
             state.value = s.copy(working = true, error = null)
             val out = File(context.cacheDir, "murai_trim_${System.currentTimeMillis()}.mp4")
             val result = VideoTrimmer.trim(context, uri, s.startMs, s.endMs, out)

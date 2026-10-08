@@ -31,6 +31,7 @@ import com.murai.gallery.domain.model.GroupMode
 import com.murai.gallery.domain.model.SortDirection
 import com.murai.gallery.domain.model.SortOption
 import com.murai.gallery.domain.sort.SortEngine
+import com.murai.gallery.ui.components.launchSafely
 import com.murai.gallery.ui.components.EmptyState
 import com.murai.gallery.ui.components.ToolScaffold
 import kotlinx.coroutines.flow.SharingStarted
@@ -44,7 +45,7 @@ class SortPresetsViewModel(private val container: AppContainer) : ViewModel() {
             .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     fun delete(id: Long) {
-        viewModelScope.launch { container.db.sortPresetsDao().delete(id) }
+        launchSafely(container.appContext, "sort") { container.db.sortPresetsDao().delete(id) }
     }
 }
 

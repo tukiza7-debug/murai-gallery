@@ -35,6 +35,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.murai.gallery.R
 import com.murai.gallery.data.vault.VaultRepository
 import com.murai.gallery.di.AppContainer
+import com.murai.gallery.ui.components.launchSafely
 import com.murai.gallery.ui.components.ToolScaffold
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -57,7 +58,7 @@ class VaultViewModel(private val container: AppContainer) : ViewModel() {
     val vaultRepo = VaultRepository(container.appContext, container.db)
 
     init {
-        viewModelScope.launch {
+        launchSafely(container.appContext, "vault") {
             val pin = container.settings.vaultPinHash.first()
             val decoy = container.settings.vaultDecoyHash.first()
             state.value = VaultUiState(hasPin = pin.isNotBlank(), hasDecoy = decoy.isNotBlank())
@@ -65,7 +66,7 @@ class VaultViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     fun setPin(pin: String, isDecoy: Boolean) {
-        viewModelScope.launch {
+        launchSafely(container.appContext, "vault") {
             // decoy shares the master salt so one comparison path serves both
             val existingSalt = container.settings.vaultSalt.first()
             val salt = existingSalt.ifBlank { com.murai.gallery.domain.vault.VaultCrypto.randomSalt() }
@@ -82,7 +83,7 @@ class VaultViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     fun unlock(pin: String) {
-        viewModelScope.launch {
+        launchSafely(container.appContext, "vault") {
             val salt = container.settings.vaultSalt.first()
             val pinHash = container.settings.vaultPinHash.first()
             val decoyHash = container.settings.vaultDecoyHash.first()

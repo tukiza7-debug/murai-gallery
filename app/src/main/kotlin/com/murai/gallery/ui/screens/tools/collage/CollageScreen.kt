@@ -35,6 +35,7 @@ import com.murai.gallery.R
 import com.murai.gallery.di.AppContainer
 import com.murai.gallery.domain.collage.CollageRenderer
 import com.murai.gallery.domain.image.ImageOps
+import com.murai.gallery.ui.components.launchSafely
 import com.murai.gallery.ui.components.ProgressOverlay
 import com.murai.gallery.ui.components.ToolScaffold
 import kotlinx.coroutines.Dispatchers
@@ -61,7 +62,7 @@ class CollageViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     fun loadCandidates() {
-        viewModelScope.launch {
+        launchSafely(container.appContext, "collage") {
             val recent = container.db.libraryDao().recent(30).filter { !it.isVideo }
             state.value = state.value.copy(picks = recent.take(6).map { it.uri })
             renderPreview()
@@ -91,9 +92,9 @@ class CollageViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     fun renderPreview() {
-        viewModelScope.launch {
+        launchSafely(container.appContext, "collage") {
             val s = state.value
-            if (s.picks.size < 2) return@launch
+            if (s.picks.size < 2) return@launchSafely
             state.value = s.copy(working = true)
             val bmp = withContext(Dispatchers.Default) {
                 val images = s.picks.take(9).mapNotNull { uri ->
@@ -111,7 +112,7 @@ class CollageViewModel(private val container: AppContainer) : ViewModel() {
     fun save(context: Context) {
         val s = state.value
         val preview = s.preview ?: return
-        viewModelScope.launch {
+        launchSafely(container.appContext, "collage") {
             state.value = state.value.copy(working = true)
             val saved = withContext(Dispatchers.IO) {
                 val bos = java.io.ByteArrayOutputStream()
