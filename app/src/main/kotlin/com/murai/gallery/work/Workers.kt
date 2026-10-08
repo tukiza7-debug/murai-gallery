@@ -1,6 +1,9 @@
 package com.murai.gallery.work
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -18,25 +21,38 @@ import com.murai.gallery.util.ErrorLogger
 import kotlinx.coroutines.flow.first
 import java.util.concurrent.TimeUnit
 
-/** Media library scan: incremental, paged, runs in the background. */
+/** Media library scan: incremental, paged, single-flight, runs in the background. */
 class ScanWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
         val container = AppContainer.get(applicationContext)
-        container.scanner.scan { }
-        GeoLabeler.enrich(container.repository.geotagged()) { id, label ->
-            container.db.libraryDao().setLocationLabel(id, label)
+        try {
+            container.scanner.scan { }
+            // Coordinates arrive in a bounded background pass after the quick
+            // scan; without them Map, location sort/group and GeoLabeler are
+            // empty on API 29+.
+            container.scanner.backfillGps()
+            GeoLabeler.enrich(container.repository.geotagged()) { id, label ->
+                container.db.libraryDao().setLocationLabel(id, label)
+            }
+            return Result.success()
+        } catch (t: Throwable) {
+            ErrorLogger.write(applicationContext, "scan-worker", t)
+            return Result.retry()
         }
-        return Result.success()
     }
 
     companion object {
         fun enqueue(context: Context) {
-            WorkManager.getInstance(context).enqueueUniqueWork(
-                "murai-scan",
-                ExistingWorkPolicy.KEEP,
-                OneTimeWorkRequestBuilder<ScanWorker>().build()
-            )
+            runCatching {
+                WorkManager.getInstance(context).enqueueUniqueWork(
+                    "murai-scan",
+                    ExistingWorkPolicy.KEEP,
+                    OneTimeWorkRequestBuilder<ScanWorker>().build()
+                )
+            }.onFailure {
+                ErrorLogger.write(context, "scan-enqueue", it)
+            }
         }
     }
 }
@@ -65,16 +81,75 @@ class WallpaperWorker(context: Context, params: WorkerParameters) : CoroutineWor
             val request = PeriodicWorkRequestBuilder<WallpaperWorker>(
                 hours.coerceAtLeast(1).toLong(), TimeUnit.HOURS
             ).build()
-            WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-                "murai-wallpaper",
-                ExistingPeriodicWorkPolicy.UPDATE,
-                request
-            )
+            runCatching {
+                WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+                    "murai-wallpaper",
+                    ExistingPeriodicWorkPolicy.UPDATE,
+                    request
+                )
+            }.onFailure { ErrorLogger.write(context, "wallpaper-schedule", it) }
         }
 
         fun cancel(context: Context) {
-            WorkManager.getInstance(context).cancelUniqueWork("murai-wallpaper")
+            runCatching { WorkManager.getInstance(context).cancelUniqueWork("murai-wallpaper") }
         }
+    }
+}
+
+/**
+ * Decodes the wallpaper source down to screen size via inSampleSize and
+ * always closes/recycles — the old code decoded the full-resolution file and
+ * OOM-killed the app on 50 MP shots.
+ */
+object WallpaperApplier {
+
+    fun apply(context: Context, uri: String, both: Boolean) {
+        val res = context.resources
+        val screenMax = maxOf(res.displayMetrics.widthPixels, res.displayMetrics.heightPixels)
+        val parsed = Uri.parse(uri)
+        // Two passes over the source, each with its own stream (provider
+        // streams are not guaranteed to support mark/reset).
+        val sample = context.contentResolver.openInputStream(parsed)?.use { stream ->
+            computeSampleSize(stream, screenMax)
+        } ?: return
+        val bitmap = context.contentResolver.openInputStream(parsed)?.use { stream ->
+            decodeSampled(stream, sample)
+        } ?: return
+        try {
+            val manager = android.app.WallpaperManager.getInstance(context)
+            if (android.os.Build.VERSION.SDK_INT >= 24) {
+                if (both) {
+                    manager.setBitmap(
+                        bitmap, null, true,
+                        android.app.WallpaperManager.FLAG_SYSTEM or android.app.WallpaperManager.FLAG_LOCK
+                    )
+                } else {
+                    manager.setBitmap(bitmap, null, true, android.app.WallpaperManager.FLAG_SYSTEM)
+                }
+            } else {
+                manager.setBitmap(bitmap)
+            }
+        } finally {
+            bitmap.recycle()
+        }
+    }
+
+    /** First pass: read the image bounds only. */
+    private fun computeSampleSize(input: java.io.InputStream, maxDim: Int): Int {
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeStream(input, null, bounds)
+        var sample = 1
+        while (maxOf(bounds.outWidth, bounds.outHeight) / (sample * 2) >= maxDim) sample *= 2
+        return sample
+    }
+
+    /** Second pass: decode with the computed inSampleSize. */
+    private fun decodeSampled(input: java.io.InputStream, sample: Int): Bitmap? {
+        val opts = BitmapFactory.Options().apply {
+            inSampleSize = sample
+            inPreferredConfig = Bitmap.Config.RGB_565
+        }
+        return BitmapFactory.decodeStream(input, null, opts)
     }
 }
 
@@ -90,11 +165,13 @@ class LogRetentionWorker(context: Context, params: WorkerParameters) : Coroutine
     companion object {
         fun schedule(context: Context) {
             val request = PeriodicWorkRequestBuilder<LogRetentionWorker>(3, TimeUnit.DAYS).build()
-            WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-                "murai-log-retention",
-                ExistingPeriodicWorkPolicy.KEEP,
-                request
-            )
+            runCatching {
+                WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+                    "murai-log-retention",
+                    ExistingPeriodicWorkPolicy.KEEP,
+                    request
+                )
+            }.onFailure { ErrorLogger.write(context, "log-retention-schedule", it) }
         }
     }
 }
@@ -117,11 +194,13 @@ class UpdateCheckWorker(context: Context, params: WorkerParameters) : CoroutineW
                     Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
                 )
                 .build()
-            WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-                "murai-update-check",
-                ExistingPeriodicWorkPolicy.KEEP,
-                request
-            )
+            runCatching {
+                WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+                    "murai-update-check",
+                    ExistingPeriodicWorkPolicy.KEEP,
+                    request
+                )
+            }.onFailure { ErrorLogger.write(context, "update-schedule", it) }
         }
     }
 }
@@ -130,23 +209,6 @@ class BootReceiver : android.content.BroadcastReceiver() {
     override fun onReceive(context: Context, intent: android.content.Intent) {
         if (intent.action == android.content.Intent.ACTION_BOOT_COMPLETED) {
             ScanWorker.enqueue(context)
-        }
-    }
-}
-
-private object WallpaperApplier {
-    fun apply(context: Context, uri: String, both: Boolean) {
-        val stream = context.contentResolver.openInputStream(android.net.Uri.parse(uri)) ?: return
-        val bitmap = android.graphics.BitmapFactory.decodeStream(stream) ?: return
-        val manager = android.app.WallpaperManager.getInstance(context)
-        if (android.os.Build.VERSION.SDK_INT >= 24) {
-            if (both) {
-                manager.setBitmap(bitmap, null, true, android.app.WallpaperManager.FLAG_SYSTEM or android.app.WallpaperManager.FLAG_LOCK)
-            } else {
-                manager.setBitmap(bitmap, null, true, android.app.WallpaperManager.FLAG_SYSTEM)
-            }
-        } else {
-            manager.setBitmap(bitmap)
         }
     }
 }

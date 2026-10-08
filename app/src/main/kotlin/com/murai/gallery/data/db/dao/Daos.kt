@@ -64,6 +64,26 @@ interface LibraryDao {
     @Query("UPDATE library_items SET locationLabel = :label WHERE id = :id")
     suspend fun setLocationLabel(id: Long, label: String)
 
+    @Query("UPDATE library_items SET latitude = :lat, longitude = :lon WHERE id = :id")
+    suspend fun setCoordinates(id: Long, lat: Double, lon: Double)
+
+    @Query(
+        """SELECT * FROM library_items
+           WHERE latitude = 0.0 AND longitude = 0.0 AND isVideo = 0 AND trashed = 0
+           LIMIT :limit"""
+    )
+    suspend fun withoutCoordinates(limit: Int): List<LibraryItemEntity>
+
+    /** Lightweight id-only ordering for the viewer; never loads full rows. */
+    @Query("SELECT id FROM library_items WHERE trashed = 0 ORDER BY dateTakenSec DESC")
+    suspend fun homeIds(): List<Long>
+
+    @Query("SELECT id FROM library_items WHERE trashed = 0 AND favorite = 1 ORDER BY dateTakenSec DESC")
+    suspend fun favoriteIds(): List<Long>
+
+    @Query("SELECT id FROM library_items WHERE trashed = 0 AND bucketId = :bucketId ORDER BY dateTakenSec DESC")
+    suspend fun albumIds(bucketId: String): List<Long>
+
     @Query("UPDATE library_items SET name = :name, path = :path WHERE id = :id")
     suspend fun rename(id: Long, name: String, path: String)
 
