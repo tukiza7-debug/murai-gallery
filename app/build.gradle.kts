@@ -14,8 +14,8 @@ android {
         minSdk = 26
         targetSdk = 35
         // CI injects VER_CODE / VER_NAME; defaults keep local builds sane.
-        versionCode = (System.getenv("VER_CODE") ?: "200").toInt()
-        versionName = System.getenv("VER_NAME") ?: "2.0.0"
+        versionCode = (System.getenv("VER_CODE") ?: "201").toInt()
+        versionName = System.getenv("VER_NAME") ?: "2.0.1"
         resourceConfigurations += listOf("en", "es", "fr", "de", "pt-rBR", "ru", "zh-rCN", "ja", "ar", "hi")
         vectorDrawables { useSupportLibrary = true }
     }
@@ -82,6 +82,10 @@ android {
     }
 }
 
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
@@ -116,4 +120,7 @@ dependencies {
     implementation(libs.zxing.core)
     implementation(libs.kotlinx.coroutines.android)
     debugImplementation(libs.androidx.compose.ui.tooling)
+
+    testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
 }

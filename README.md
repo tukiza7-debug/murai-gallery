@@ -6,7 +6,7 @@
 
 **Your photos, beautifully organized. Fast. Private. Yours.**
 
-![Version](https://img.shields.io/badge/version-2.0.0_Major_Release-F5A623?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-2.0.1_Stability_Update-F5A623?style=for-the-badge)
 ![Build](https://img.shields.io/github/actions/workflow/status/tukiza7-debug/murai-gallery/release.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white)
 ![License](https://img.shields.io/badge/license-Apache--2.0-0F766E?style=for-the-badge)
 ![Downloads](https://img.shields.io/github/downloads/tukiza7-debug/murai-gallery/total?style=for-the-badge&color=F5A623)
@@ -15,6 +15,20 @@
 </div>
 
 ---
+
+## What's new in v2.0.1
+
+**v2.0.1 is a crash and major bug-fix release over the v2 rewrite.** The headline fixes:
+
+- **Files finally behave**: every move, copy, rename, delete, EXIF edit, editor, compressor and motion-photo extraction now goes through MediaStore content URIs instead of misreading the cached relative path as a real file path.
+- **The scanner is rebuilt for every Android version**: API-correct projections on Android 8 → 15, trash entries survive a rescan so restore works, GPS coordinates are backfilled in the background so the Map, location sort and place labels work, and one scan runs at a time — a partial or failed pass can never wipe your library cache.
+- **Far fewer crashes**: no more `runBlocking` in the video player, startup order hardened (crash logger first, language restore on the main thread), background work wrapped so failures are logged instead of fatal, and a new **recovery screen** with *Copy log* / *Export log zip* appears after a crash instead of a silent loop.
+- **Much lower memory use**: wallpapers decode to screen size, vault encryption/decryption streams in 64 KB chunks (2 GB videos are fine), motion-photo trailers are searched streaming, and the viewer loads ids + a sliding window instead of every full row.
+- **Android 14 partial access done right**: "Selected photos" now behaves like a limited library with a *Select more* banner instead of a permission nag loop.
+- **"Open with" opens the right item**: shared links and files open the exact incoming URI — never a fallback to the first gallery item — even without storage permission; SEND, SEND_MULTIPLE and SET_WALLPAPER are all handled, including while the app is already open.
+- **Hostile folder names are safe**: every dynamic navigation argument is encoded, so albums named `A/B`, `a?b`, `{x}` or with unicode/emoji can't crash the app.
+- **Consent dialogs queue properly**: delete/trash/write confirmations no longer overwrite each other and can't double-launch; cancelled or recreated activities always resolve.
+- **Your data is protected from us**: the destructive-migration fallback is gone. Database upgrades use real migrations, and if the database is ever corrupt, the broken file is backed up before a rebuild — tags, favorites, sort presets and the vault index are never wiped.
 
 ## What is Murai Gallery?
 

@@ -3,6 +3,126 @@
 All notable changes to Murai Gallery are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.1] — Stability Update
+
+A crash and major bug-fix release. Same app, same features — far fewer ways
+to fall over. Every fix below was found by a 10-round audit (crashes, memory,
+Android 8/10/13/14/15 permissions, threading, navigation).
+
+### Fixed
+
+#### File paths were never real file paths
+- `LibraryItemEntity.path` stores a MediaStore **relative path**, not a file
+  path, but move, copy, rename, legacy delete, the EXIF sheet, the editor,
+  the compressor and motion-photo extraction all used it as one. Everything
+  now streams through the item's **content URI** (`openInputStream` /
+  `openFileDescriptor`):
+  - move/rename go through MediaStore updates (`RELATIVE_PATH` on Q+,
+    DATA-resolved file renames on 26–28)
+  - EXIF editing round-trips through a private temp copy and writes back via
+    `openOutputStream`, requesting **`createWriteRequest` consent** when the
+    system demands it
+  - the editor, compressor and panorama viewer decode from content URIs with
+    two-pass sampling
+  - motion-photo trailer search streams through a fixed 512 KB window instead
+    of loading the whole JPEG
+
+#### Scanner rebuilt for every API level
+- Projection is built per API level: `RELATIVE_PATH` only on 29+,
+  `IS_FAVORITE` / `IS_TRASHED` only on 30+, folder names derived from
+  `DATA` / `BUCKET_DISPLAY_NAME` on 26–28; optional columns are read with
+  `getColumnIndex` + `-1` checks instead of `getColumnIndexOrThrow`
+- API 30+ queries include **trashed rows** via `QUERY_ARG_MATCH_TRASHED =
+  MATCH_INCLUDE`, so the Bin keeps working across rescans; 26–29 keep the
+  app-internal bin
+- GPS coordinates are backfilled in a bounded background pass via
+  `MediaStore.setRequireOriginal(uri)` + `ACCESS_MEDIA_LOCATION`, so the Map,
+  location sort/group and GeoLabeler actually have coordinates on 29+
+- Scanning is **single-flight**: ScanWorker, pull-to-refresh and the
+  permission callback share one coordinated pass instead of interleaving
+- `deleteStale` runs only after a fully completed, permitted pass — never
+  after a partial, failed or permission-less one; a revoked or partial grant
+  (Android 14 selected photos) can no longer wipe the library cache
+
+#### Startup crashes
+- `ErrorLogger` is installed **before** anything else can fail (it used to be
+  registered after the DI container was built)
+- The persisted app language is applied with `AppCompatDelegate
+  .setApplicationLocales` on the **main thread** before UI, not from a
+  background dispatcher
+- Notification channels and WorkManager scheduling run in guarded blocks and
+  log failures instead of crashing the launch
+
+#### Video player
+- Removed the `runBlocking` that froze the main thread: sources resolve off
+  the main thread with a loading state, the player is created in a
+  `DisposableEffect` keyed on the resolved source (released on change and on
+  dispose), and decode failures show a friendly error with retry
+
+#### Memory (OOM)
+- Wallpaper application decodes with `inSampleSize` to screen size and
+  recycles the bitmap — a 50 MP wallpaper source no longer kills the process
+- Vault encryption/decryption **streams in 64 KB GCM chunks** (new container
+  format with magic header); old whole-buffer vault files still decrypt via
+  legacy-format detection, and nothing is ever read into a byte array whole
+- The viewer builds its stream from **id-only queries** with a per-scope
+  cache and a sliding entity window, instead of loading every full row
+
+#### Permissions (Android 8 → 15)
+- Android 14's `READ_MEDIA_VISUAL_USER_SELECTED` is treated as **partial
+  access**: the library shows, with a small *limited access* banner and a
+  *Select more* action
+- The rationale dialog no longer loops after "Not now"; it shows once per
+  entry while nothing is granted, and requests only follow the rationale
+
+#### External intents
+- `ACTION_VIEW` opens the **exact incoming URI** in a dedicated `uri:` scope
+  (widening to its folder when the item resolves to a library row) — never a
+  fallback to the first gallery item; works with zero storage permission via
+  URI grants
+- `ACTION_SEND`, `ACTION_SEND_MULTIPLE` and `ACTION_SET_WALLPAPER` are all
+  handled, plus `onNewIntent` while the app is already running
+
+#### Navigation
+- Every dynamic route argument (bucket ids, viewer payloads, video/editor/
+  trimmer URIs) is **encoded** and decoded through one helper with a safe
+  format replacing `|` / `:` separators; hostile folder names (`A/B`,
+  `a?b`, `{x}`, unicode, spaces) round-trip safely
+- Every destination guards missing/invalid arguments and pops back instead
+  of crashing
+
+#### Consent bus
+- Replaced the last-write-wins `StateFlow` with a **one-shot queue**: multiple
+  requests line up instead of overwriting, each `IntentSender` launches at
+  most once, and cancel/failure/activity recreation always completes the
+  callback
+
+#### Database
+- **`fallbackToDestructiveMigration` removed**: upgrades use real migrations
+  and `exportSchema = true` with a committed schema directory — tags,
+  favorites, sort presets and the vault index can no longer be wiped by an
+  upgrade
+- Unrecoverable database corruption is handled: the broken file is backed up
+  next to itself, a fresh database is created, and the event is logged
+
+#### Crash hardening
+- Every tool screen (Duplicates, Editor, Compressor, Collage, GIF Maker,
+  Trimmer, OCR, QR, Rename, Cleaner, Telegram, Wallpaper, Backup, Vault, Bin)
+  runs its work through a guarded launcher: failures land in the error log
+  and logcat instead of killing the process
+- New **global recovery screen**: after an uncaught crash, the next launch
+  shows the saved stack trace with *Copy log* and *Export log zip* actions
+
+### Added
+- Unit test suite: per-API projection building, relative-path derivation,
+  hostile-name route encoding/decoding, single-flight scan + deleteStale
+  guard, consent-bus queue semantics, and streaming vault round-trips
+  (including legacy-format files)
+
+### Changed
+- Version 2.0.1 (versionCode 201+); still `com.murai.gallery`, same signature,
+  updates cleanly over 2.0.0
+
 ## [2.0.0] — Major Release
 
 The complete v2 rewrite. **Every line of code, every screen, every string and
