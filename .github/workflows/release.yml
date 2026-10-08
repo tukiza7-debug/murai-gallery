@@ -28,13 +28,12 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install SDK components
+      - name: Install Android SDK components
         run: |
-          sdkmanager --install "platforms;android-35" "build-tools;35.0.0" "platform-tools" > /dev/null
+          # ubuntu-latest ships the SDK; accept licenses non-interactively first
           yes | sdkmanager --licenses > /dev/null || true
+          sdkmanager --install "platforms;android-35" "build-tools;35.0.0" "platform-tools" > /dev/null
+          sdkmanager --list | grep -E "platforms;android-35|build-tools;35" || true
 
       - name: Export version
         run: |
