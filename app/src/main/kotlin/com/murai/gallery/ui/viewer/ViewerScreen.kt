@@ -72,11 +72,11 @@ fun ViewerScreen(
     onOpenEditor: (String) -> Unit,
     onOpenSlideshow: () -> Unit
 ) {
-    val parts = payload.split("|", limit = 2)
-    val scopeKey = parts.getOrNull(0) ?: "home"
-    val anchorId = parts.getOrNull(1)?.toLongOrNull() ?: 0L
+    // Decoded payloads use the safe "anchor@scope" format; legacy
+    // "scope|anchor" strings from earlier builds still parse (fix #8).
+    val (scopeKey, anchorId) = com.murai.gallery.util.RouteArgs.parseViewerPayload(payload)
     val vm: ViewerViewModel = viewModel(
-        key = "viewer_$payload",
+        key = "viewer_$scopeKey-$anchorId",
         factory = com.murai.gallery.ui.components.muraiFactory { ViewerViewModel(container, scopeKey, anchorId) }
     )
     val ids by vm.ids.collectAsState()
