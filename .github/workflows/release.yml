@@ -30,10 +30,13 @@ jobs:
 
       - name: Install Android SDK components
         run: |
-          # ubuntu-latest ships the SDK; accept licenses non-interactively first
-          yes | sdkmanager --licenses > /dev/null || true
-          sdkmanager --install "platforms;android-35" "build-tools;35.0.0" "platform-tools" > /dev/null
-          sdkmanager --list | grep -E "platforms;android-35|build-tools;35" || true
+          # ubuntu-latest ships the SDK under /usr/local/lib/android/sdk but
+          # setup-java resets PATH, so resolve sdkmanager explicitly.
+          SDKM=$(ls -d /usr/local/lib/android/sdk/cmdline-tools/*/bin/sdkmanager 2>/dev/null | head -1)
+          echo "sdkmanager: $SDKM"
+          yes | "$SDKM" --licenses > /dev/null || true
+          "$SDKM" --install "platforms;android-35" "build-tools;35.0.0" "platform-tools" > /dev/null
+          echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> "$GITHUB_ENV"
 
       - name: Export version
         run: |
