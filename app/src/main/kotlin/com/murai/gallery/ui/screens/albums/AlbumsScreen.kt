@@ -50,7 +50,7 @@ fun AlbumsScreen(
     container: AppContainer,
     onOpenAlbum: (String) -> Unit
 ) {
-    val vm: AlbumsViewModel = viewModel()
+    val vm: AlbumsViewModel = viewModel(factory = com.murai.gallery.ui.components.muraiFactory { AlbumsViewModel(container) })
     val albums by vm.albums.collectAsState()
     Column(
         modifier = Modifier

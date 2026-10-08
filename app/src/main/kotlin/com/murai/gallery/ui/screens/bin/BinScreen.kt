@@ -86,7 +86,7 @@ fun BinScreen(
     container: AppContainer,
     onBack: () -> Unit
 ) {
-    val vm: BinViewModel = viewModel()
+    val vm: BinViewModel = viewModel(factory = com.murai.gallery.ui.components.muraiFactory { BinViewModel(container) })
     val items by vm.items.collectAsState()
     var confirmPurge by remember { mutableStateOf(false) }
 

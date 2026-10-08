@@ -49,7 +49,7 @@ fun FavoritesScreen(
     onBack: () -> Unit,
     onOpenViewer: (String, Long) -> Unit
 ) {
-    val vm: FavoritesViewModel = viewModel()
+    val vm: FavoritesViewModel = viewModel(factory = com.murai.gallery.ui.components.muraiFactory { FavoritesViewModel(container) })
     val items by vm.favorites.collectAsState()
     Scaffold(
         topBar = {

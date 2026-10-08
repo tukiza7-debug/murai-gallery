@@ -99,7 +99,7 @@ fun GalleryScreen(
     onOpenMap: () -> Unit,
     onOpenTool: (String) -> Unit
 ) {
-    val vm: GalleryViewModel = viewModel()
+    val vm: GalleryViewModel = viewModel(factory = com.murai.gallery.ui.components.muraiFactory { GalleryViewModel(container) })
     val state by vm.state.collectAsState()
     val cells: LazyPagingItems<GalleryCell> = vm.pagesAsFlow().collectAsLazyPagingItems()
     val context = LocalContext.current

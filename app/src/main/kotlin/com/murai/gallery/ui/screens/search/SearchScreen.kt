@@ -70,7 +70,7 @@ fun SearchScreen(
     onBack: () -> Unit,
     onOpenViewer: (String, Long) -> Unit
 ) {
-    val vm: SearchViewModel = viewModel()
+    val vm: SearchViewModel = viewModel(factory = com.murai.gallery.ui.components.muraiFactory { SearchViewModel(container) })
     val filter by vm.filter.collectAsState()
     val items: LazyPagingItems<LibraryItemEntity> = vm.results().collectAsLazyPagingItems()
 
