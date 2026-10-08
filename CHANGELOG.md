@@ -3,6 +3,26 @@
 All notable changes to Murai Gallery are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.2] — Hotfix
+
+### Fixed
+
+- **App died on open with "Cannot create an instance of class …"** — the
+  Gallery (home), Albums, Search, Favorites and Bin screens created their
+  ViewModels through Compose's default reflection factory, which requires a
+  no-arg constructor that container-dependent ViewModels do not have. The
+  crash was latent since v2.0.0 and surfaced as
+  `RuntimeException: Cannot create an instance of class …` /
+  `NoSuchMethodException: <init> []` at first composition. All five screens
+  now pass the app's explicit `muraiFactory`, exactly like the other
+  seventeen call sites.
+- **Regression guard** — a new unit test scans the Kotlin sources and fails
+  the build if any `viewModel()` call site is ever created without an
+  explicit factory again.
+- **Readable crash logs** — R8 now keeps ViewModel class names
+  (`-keepnames`), so future crash reports show `GalleryViewModel` instead of
+  a minified name like `c6.p`.
+
 ## [2.0.1] — Stability Update
 
 A crash and major bug-fix release. Same app, same features — far fewer ways

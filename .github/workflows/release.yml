@@ -100,26 +100,19 @@ jobs:
           VER="${VER_NAME}"
           cd app/build/outputs/apk/release/out
           {
-            echo "## Murai Gallery ${VER} — Stability Update"
+            echo "## Murai Gallery ${VER} — Hotfix"
             echo
-            echo "A crash and major bug-fix release over the v2 rewrite: same app, same features, far fewer ways to fall over. Full details in the [changelog](https://github.com/tukiza7-debug/murai-gallery/blob/main/CHANGELOG.md)."
+            echo "A hotfix over v2.0.1 for the launch crash reported on some devices. Full details in the [changelog](https://github.com/tukiza7-debug/murai-gallery/blob/main/CHANGELOG.md)."
             echo
             echo "### Fixed"
-            echo "- **File paths**: move / copy / rename / delete / EXIF / editor / compressor / motion-photo now stream through MediaStore content URIs instead of misreading the cached relative path as a real file path"
-            echo "- **Scanner**: API-correct projections on Android 8–15, trash rows survive rescans (restore keeps working), GPS backfilled in the background so Map / location sort / place labels work, single-flight scanning so a partial or failed pass can never wipe the library cache"
-            echo "- **Startup**: crash logger installed first, language restore moved to the main thread, notification channels and WorkManager scheduling guarded — no more launch-time crashes"
-            echo "- **Video player**: runBlocking removed, loading state, player lifecycle fixed, decode errors show a friendly retry screen"
-            echo "- **Memory**: wallpapers decode to screen size, vault crypto streams in 64 KB chunks (2 GB videos fine, old files still readable), motion-photo trailer search streams, viewer loads ids + a sliding window"
-            echo "- **Permissions**: Android 14 selected-photos access is now treated as limited access with a Select more banner instead of a nag loop"
-            echo "- **External intents**: 'Open with' opens the exact incoming URI (never the first gallery item), SEND / SEND_MULTIPLE / SET_WALLPAPER handled, works without storage permission, onNewIntent supported"
-            echo "- **Navigation**: all dynamic route arguments encoded — folders named A/B, a?b, {x} or unicode can no longer crash the app"
-            echo "- **Consent dialogs**: queued instead of overwritten, each launched at most once, always resolved"
-            echo "- **Database**: destructive-migration fallback removed, real migrations with exported schema, corrupt-database backup + rebuild instead of wipe"
-            echo "- **Crash hardening**: every tool catches its failures into the error log, and a new recovery screen (Copy log / Export log zip) appears after a crash instead of a silent loop"
+            echo "- **Launch crash fixed**: the Gallery (home), Albums, Search, Favorites and Bin screens built their ViewModels through the default reflection factory, which cannot construct container-dependent ViewModels — the app died at first composition with 'Cannot create an instance of class ...' (latent since v2.0.0). Every screen now passes the app's explicit factory, a new regression test fails the build if any viewModel() call site ever loses its factory again, and ViewModel names stay readable in crash logs"
+            echo
+            echo "### Also in v2.0.1"
+            echo "- File paths, scanner, startup, video player, memory, permissions, external intents, navigation, consent dialogs, database safety and crash hardening — see the v2.0.1 notes and the changelog"
             echo
             echo "### Install"
             echo "1. Download the APK for your device (arm64-v8a fits most phones; universal works everywhere)."
-            echo "2. Install directly over v2.0.0 — same signature, versionCode increases."
+            echo "2. Install directly over v2.0.1 — same signature, versionCode increases."
             echo
             echo "### SHA-256 checksums"
             echo '```'
@@ -128,7 +121,7 @@ jobs:
           } > body.md
 
           gh release create "v${VER}" \
-            --title "Murai Gallery v${VER} — Stability Update" \
+            --title "Murai Gallery v${VER} — Hotfix" \
             --notes-file body.md \
             --latest \
             MuraiGallery-"${VER}"-universal.apk \

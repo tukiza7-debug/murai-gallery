@@ -16,9 +16,13 @@
 
 ---
 
-## What's new in v2.0.1
+## What's new in v2.0.2
 
-**v2.0.1 is a crash and major bug-fix release over the v2 rewrite.** The headline fixes:
+**v2.0.2 fixes the launch crash reported on v2.0.0 / v2.0.1** ("Cannot create an instance of class …"): the Gallery (home), Albums, Search, Favorites and Bin screens built their ViewModels through the default reflection factory, which cannot construct container-dependent ViewModels — so the app could die at first composition. Every screen now passes an explicit factory, a new regression test fails the build if any `viewModel()` call site ever loses its factory again, and ViewModel class names stay readable in crash logs.
+
+## What was new in v2.0.1
+
+**v2.0.1 was a crash and major bug-fix release over the v2 rewrite.** The headline fixes:
 
 - **Files finally behave**: every move, copy, rename, delete, EXIF edit, editor, compressor and motion-photo extraction now goes through MediaStore content URIs instead of misreading the cached relative path as a real file path.
 - **The scanner is rebuilt for every Android version**: API-correct projections on Android 8 → 15, trash entries survive a rescan so restore works, GPS coordinates are backfilled in the background so the Map, location sort and place labels work, and one scan runs at a time — a partial or failed pass can never wipe your library cache.

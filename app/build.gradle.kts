@@ -14,8 +14,8 @@ android {
         minSdk = 26
         targetSdk = 35
         // CI injects VER_CODE / VER_NAME; defaults keep local builds sane.
-        versionCode = (System.getenv("VER_CODE") ?: "201").toInt()
-        versionName = System.getenv("VER_NAME") ?: "2.0.1"
+        versionCode = (System.getenv("VER_CODE") ?: "202").toInt()
+        versionName = System.getenv("VER_NAME") ?: "2.0.2"
         resourceConfigurations += listOf("en", "es", "fr", "de", "pt-rBR", "ru", "zh-rCN", "ja", "ar", "hi")
         vectorDrawables { useSupportLibrary = true }
     }
