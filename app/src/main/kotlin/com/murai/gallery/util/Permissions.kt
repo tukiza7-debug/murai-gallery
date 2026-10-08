@@ -38,4 +38,22 @@ enum class MuraiPermission(val permissions: Array<String>, val rationaleKey: Str
     fun granted(context: Context): Boolean = permissions.any {
         ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
     }
+
+    /**
+     * True for the Android 14 "selected photos" state: the user granted
+     * READ_MEDIA_VISUAL_USER_SELECTED but not the full library (fix #6).
+     * The app must treat this as read access with a limited-access banner,
+     * not as a missing permission to nag about.
+     */
+    fun isPartial(context: Context): Boolean {
+        if (Build.VERSION.SDK_INT < 34) return false
+        val selected = ContextCompat.checkSelfPermission(
+            context, Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED
+        ) == PackageManager.PERMISSION_GRANTED
+        val full = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_MEDIA_IMAGES) ==
+            PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.READ_MEDIA_VIDEO) ==
+            PackageManager.PERMISSION_GRANTED
+        return selected && !full
+    }
 }

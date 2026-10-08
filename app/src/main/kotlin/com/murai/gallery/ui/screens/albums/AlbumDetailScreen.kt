@@ -81,7 +81,7 @@ fun AlbumDetailScreen(
     container: AppContainer,
     bucketId: String,
     onBack: () -> Unit,
-    onOpenViewer: (String) -> Unit
+    onOpenViewer: (Long) -> Unit
 ) {
     val vm: AlbumDetailViewModel = viewModel(
         key = "album_$bucketId",
@@ -125,7 +125,7 @@ fun AlbumDetailScreen(
                         .fillMaxWidth()
                         .aspectRatio(1f)
                         .combinedClickable(
-                            onClick = { onOpenViewer("album:$bucketId|${item.id}") },
+                            onClick = { onOpenViewer(item.id) },
                             onLongClick = { }
                         )
                 ) {

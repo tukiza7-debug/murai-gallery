@@ -47,7 +47,7 @@ class FavoritesViewModel(container: AppContainer) : ViewModel() {
 fun FavoritesScreen(
     container: AppContainer,
     onBack: () -> Unit,
-    onOpenViewer: (String) -> Unit
+    onOpenViewer: (String, Long) -> Unit
 ) {
     val vm: FavoritesViewModel = viewModel()
     val items by vm.favorites.collectAsState()
@@ -84,7 +84,7 @@ fun FavoritesScreen(
                         size = 120.dp,
                         selected = false,
                         selectionMode = false,
-                        onClick = { onOpenViewer("favorites|${item.id}") },
+                        onClick = { onOpenViewer("favorites", item.id) },
                         onLongClick = { },
                         modifier = Modifier
                             .fillMaxWidth()

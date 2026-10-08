@@ -68,7 +68,7 @@ class SearchViewModel(private val container: AppContainer) : ViewModel() {
 fun SearchScreen(
     container: AppContainer,
     onBack: () -> Unit,
-    onOpenViewer: (String) -> Unit
+    onOpenViewer: (String, Long) -> Unit
 ) {
     val vm: SearchViewModel = viewModel()
     val filter by vm.filter.collectAsState()
@@ -141,7 +141,7 @@ fun SearchScreen(
                         size = 120.dp,
                         selected = false,
                         selectionMode = false,
-                        onClick = { onOpenViewer("search|${item.id}") },
+                        onClick = { onOpenViewer("search", item.id) },
                         onLongClick = { },
                         modifier = Modifier
                             .fillMaxWidth()

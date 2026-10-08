@@ -24,6 +24,9 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.murai.gallery.di.AppContainer
 import com.murai.gallery.ui.screens.about.AboutScreen
+import com.murai.gallery.util.IncomingIntent
+import com.murai.gallery.util.RouteArgs
+import com.murai.gallery.ui.viewer.ViewerScopes
 import com.murai.gallery.ui.screens.albums.AlbumDetailScreen
 import com.murai.gallery.ui.screens.albums.AlbumsScreen
 import com.murai.gallery.ui.screens.bin.BinScreen
@@ -65,9 +68,17 @@ object Routes {
     const val VAULT = "vault"
     const val SLIDESHOW = "slideshow"
 
-    fun album(bucketId: String) = "album/$bucketId"
-    fun viewer(payload: String) = "viewer/$payload"
-    fun video(payload: String) = "video/$payload"
+    /**
+     * All dynamic arguments are RouteArgs-encoded (fix #8): folder names like
+     * "A/B", "a?b" or "{x}" can no longer break route matching or crash the
+     * NavHost. Screens decode with the same helper.
+     */
+    fun album(bucketId: String) = "album/${RouteArgs.encode(bucketId)}"
+    fun viewer(scopeKey: String, anchorId: Long) = "viewer/${RouteArgs.viewerPayload(scopeKey, anchorId)}"
+    fun viewer(payload: String) = "viewer/${RouteArgs.encode(payload)}"
+    fun video(uri: String) = "video/${RouteArgs.encode(uri)}"
+    fun editor(uri: String) = "tool/editor?uri=${RouteArgs.encode(uri)}"
+    fun trimmer(uri: String) = "tool/trimmer?uri=${RouteArgs.encode(uri)}"
 
     const val TOOL_DUPLICATES = "tool/duplicates"
     const val TOOL_EDITOR = "tool/editor"
@@ -103,7 +114,7 @@ private val tabs = listOf(
 )
 
 @Composable
-fun MuraiAppRoot(container: AppContainer, incomingUri: android.net.Uri?) {
+fun MuraiAppRoot(container: AppContainer, incomingIntent: IncomingIntent?) {
     val navController = rememberNavController()
     val backStack by navController.currentBackStackEntryAsState()
     val currentRoute = backStack?.destination?.route
@@ -134,7 +145,7 @@ fun MuraiAppRoot(container: AppContainer, incomingUri: android.net.Uri?) {
         MuraiNavHost(
             navController = navController,
             container = container,
-            incomingUri = incomingUri,
+            incomingIntent = incomingIntent,
             modifier = Modifier.padding(
                 bottom = if (showBar) padding.calculateBottomPadding() else androidx.compose.ui.unit.Dp(0f)
             )
@@ -146,9 +157,34 @@ fun MuraiAppRoot(container: AppContainer, incomingUri: android.net.Uri?) {
 private fun MuraiNavHost(
     navController: NavHostController,
     container: AppContainer,
-    incomingUri: android.net.Uri?,
+    incomingIntent: IncomingIntent?,
     modifier: Modifier = Modifier
 ) {
+    // External VIEW/SEND/SEND_MULTIPLE intents open the exact URIs that were
+    // handed over — never a fallback to the first library item (fix #7).
+    androidx.compose.runtime.LaunchedEffect(incomingIntent) {
+        when (val inc = incomingIntent) {
+            is IncomingIntent.View ->
+                navController.navigate(
+                    Routes.viewer(ViewerScopes.URI + inc.uri.toString(), 0L)
+                )
+            is IncomingIntent.Send ->
+                if (inc.uri != null) {
+                    navController.navigate(
+                        Routes.viewer(ViewerScopes.URI + inc.uri.toString(), 0L)
+                    )
+                }
+            is IncomingIntent.SendMultiple ->
+                if (inc.uris.isNotEmpty()) {
+                    val scope = ViewerScopes.SHARE + inc.uris.joinToString("\n") { it.toString() }
+                    navController.navigate(Routes.viewer(scope, 0L))
+                }
+            IncomingIntent.SetWallpaper ->
+                navController.navigate(Routes.TOOL_WALLPAPER)
+            null -> Unit
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = Routes.GALLERY,
@@ -157,8 +193,9 @@ private fun MuraiNavHost(
         composable(Routes.GALLERY) {
             GalleryScreen(
                 container = container,
-                incomingUri = incomingUri,
-                onOpenViewer = { payload -> navController.navigate(Routes.viewer(payload)) },
+                onOpenViewer = { scopeKey, anchorId ->
+                    navController.navigate(Routes.viewer(scopeKey, anchorId))
+                },
                 onOpenSearch = { navController.navigate(Routes.SEARCH) },
                 onOpenFavorites = { navController.navigate(Routes.FAVORITES) },
                 onOpenBin = { navController.navigate(Routes.BIN) },
@@ -177,12 +214,19 @@ private fun MuraiNavHost(
             route = "album/{bucketId}",
             arguments = listOf(navArgument("bucketId") { type = NavType.StringType })
         ) { entry ->
-            val bucketId = entry.arguments?.getString("bucketId") ?: return@composable
+            val bucketId = RouteArgs.decode(entry.arguments?.getString("bucketId"))
+            // Guard: a blank/garbled id would query a nonsense album.
+            if (bucketId.isBlank()) {
+                androidx.compose.runtime.LaunchedEffect(Unit) { navController.popBackStack() }
+                return@composable
+            }
             AlbumDetailScreen(
                 container = container,
                 bucketId = bucketId,
                 onBack = { navController.popBackStack() },
-                onOpenViewer = { payload -> navController.navigate(Routes.viewer(payload)) }
+                onOpenViewer = { anchorId ->
+                    navController.navigate(Routes.viewer("album:$bucketId", anchorId))
+                }
             )
         }
         composable(Routes.TOOLS) {
@@ -205,7 +249,9 @@ private fun MuraiNavHost(
             FavoritesScreen(
                 container = container,
                 onBack = { navController.popBackStack() },
-                onOpenViewer = { payload -> navController.navigate(Routes.viewer(payload)) }
+                onOpenViewer = { scopeKey, anchorId ->
+                    navController.navigate(Routes.viewer(scopeKey, anchorId))
+                }
             )
         }
         composable(Routes.BIN) {
@@ -218,7 +264,9 @@ private fun MuraiNavHost(
             SearchScreen(
                 container = container,
                 onBack = { navController.popBackStack() },
-                onOpenViewer = { payload -> navController.navigate(Routes.viewer(payload)) }
+                onOpenViewer = { scopeKey, anchorId ->
+                    navController.navigate(Routes.viewer(scopeKey, anchorId))
+                }
             )
         }
         composable(Routes.MAP) {
@@ -246,12 +294,18 @@ private fun MuraiNavHost(
             route = "viewer/{payload}",
             arguments = listOf(navArgument("payload") { type = NavType.StringType })
         ) { entry ->
+            val raw = entry.arguments?.getString("payload") ?: ""
+            val payload = RouteArgs.decode(raw)
+            if (payload.isBlank()) {
+                androidx.compose.runtime.LaunchedEffect(Unit) { navController.popBackStack() }
+                return@composable
+            }
             ViewerScreen(
                 container = container,
-                payload = entry.arguments?.getString("payload") ?: "",
+                payload = payload,
                 onBack = { navController.popBackStack() },
                 onOpenVideo = { p -> navController.navigate(Routes.video(p)) },
-                onOpenEditor = { uri -> navController.navigate("tool/editor?uri=${android.net.Uri.encode(uri)}") },
+                onOpenEditor = { uri -> navController.navigate(Routes.editor(uri)) },
                 onOpenSlideshow = { navController.navigate(Routes.SLIDESHOW) }
             )
         }
@@ -259,11 +313,16 @@ private fun MuraiNavHost(
             route = "video/{payload}",
             arguments = listOf(navArgument("payload") { type = NavType.StringType })
         ) { entry ->
+            val uri = RouteArgs.decode(entry.arguments?.getString("payload"))
+            if (uri.isBlank()) {
+                androidx.compose.runtime.LaunchedEffect(Unit) { navController.popBackStack() }
+                return@composable
+            }
             VideoPlayerScreen(
                 container = container,
-                payload = entry.arguments?.getString("payload") ?: "",
+                payload = uri,
                 onBack = { navController.popBackStack() },
-                onOpenTrimmer = { uri -> navController.navigate("tool/trimmer?uri=${android.net.Uri.encode(uri)}") }
+                onOpenTrimmer = { u -> navController.navigate(Routes.trimmer(u)) }
             )
         }
         composable(Routes.TOOL_DUPLICATES) {
@@ -275,7 +334,7 @@ private fun MuraiNavHost(
         ) { entry ->
             EditorScreen(
                 container = container,
-                startUri = entry.arguments?.getString("uri") ?: "",
+                startUri = RouteArgs.decode(entry.arguments?.getString("uri")),
                 onBack = { navController.popBackStack() }
             )
         }
@@ -285,7 +344,7 @@ private fun MuraiNavHost(
         ) { entry ->
             VideoTrimmerScreen(
                 container = container,
-                startUri = entry.arguments?.getString("uri") ?: "",
+                startUri = RouteArgs.decode(entry.arguments?.getString("uri")),
                 onBack = { navController.popBackStack() }
             )
         }

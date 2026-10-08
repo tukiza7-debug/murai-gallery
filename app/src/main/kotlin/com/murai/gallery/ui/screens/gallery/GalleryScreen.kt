@@ -91,8 +91,7 @@ import java.text.NumberFormat
 @Composable
 fun GalleryScreen(
     container: AppContainer,
-    incomingUri: android.net.Uri?,
-    onOpenViewer: (String) -> Unit,
+    onOpenViewer: (String, Long) -> Unit,
     onOpenSearch: () -> Unit,
     onOpenFavorites: () -> Unit,
     onOpenBin: () -> Unit,
@@ -107,27 +106,36 @@ fun GalleryScreen(
     var showSortSheet by remember { mutableStateOf(false) }
     var confirmTrash by remember { mutableStateOf(false) }
     var showRationale by remember { mutableStateOf(false) }
+    var limitedAccess by remember { mutableStateOf(false) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { granted ->
         if (granted.values.any { it }) {
+            limitedAccess = MuraiPermission.LIBRARY.isPartial(context)
             ScanWorker.enqueue(context)
             vm.refreshLibrary()
         }
     }
 
+    // The rationale shows at most once per composition and only while nothing
+    // at all is granted — never in a loop after "Not now" (fix #6).
+    var rationaleShown by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
-        if (MuraiPermission.LIBRARY.required(context)) {
+        limitedAccess = MuraiPermission.LIBRARY.isPartial(context)
+        if (!MuraiPermission.LIBRARY.granted(context) && !rationaleShown) {
+            rationaleShown = true
             showRationale = true
         }
     }
 
-    // incoming VIEW/SEND intents open the shared item directly
-    LaunchedEffect(incomingUri) {
-        if (incomingUri != null) {
-            onOpenViewer("share|0")
-        }
+    // Incoming VIEW/SEND intents are handled at the nav-root level; nothing
+    // to do here anymore (fix #7).
+
+    // Limited access (Android 14 selected photos): refresh the flag whenever
+    // the composition lands so the banner tracks reality.
+    LaunchedEffect(Unit) {
+        limitedAccess = MuraiPermission.LIBRARY.isPartial(context)
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -209,6 +217,42 @@ fun GalleryScreen(
 
             Spacer(Modifier.height(10.dp))
 
+            // Partial grant (Android 14 "selected photos"): a small banner
+            // with a Select more action instead of a permission nag loop.
+            if (limitedAccess) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    ),
+                    shape = RoundedCornerShape(14.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                stringResource(R.string.limited_access_title),
+                                style = MaterialTheme.typography.titleSmall
+                            )
+                            Text(
+                                stringResource(R.string.limited_access_text),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        TextButton(onClick = {
+                            permissionLauncher.launch(MuraiPermission.LIBRARY.permissions)
+                        }) {
+                            Text(stringResource(R.string.action_select_more))
+                        }
+                    }
+                }
+            }
+
             // New Tools rail — statusBarsPadding is applied by the masthead above,
             // so nothing here clips under system bars (v1.0.6 overlap bug fixed).
             Text(
@@ -265,7 +309,7 @@ fun GalleryScreen(
                             selectionMode = state.selectionMode,
                             onClick = {
                                 if (state.selectionMode) vm.toggleSelection(cell.entity.id)
-                                else onOpenViewer("home|${cell.entity.id}")
+                                else onOpenViewer("home", cell.entity.id)
                             },
                             onLongClick = { vm.enterSelection(cell.entity.id) },
                             modifier = Modifier.fillMaxWidth()

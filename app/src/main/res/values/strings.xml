@@ -25,6 +25,26 @@
     <string name="action_favorite">Favorite</string>
     <string name="action_copy">Copy</string>
     <string name="action_set_as">Set as wallpaper</string>
+    <string name="action_failed">Failed — try again</string>
+    <string name="action_retry">Retry</string>
+    <string name="action_select_more">Select more</string>
+    <string name="action_copy_log">Copy log</string>
+    <string name="action_export_zip">Export log zip</string>
+
+    <!-- v2.0.1: partial access / limited library -->
+    <string name="limited_access_title">Limited photo access</string>
+    <string name="limited_access_text">You shared only selected photos with Murai Gallery. Select more to see the rest of your library.</string>
+
+    <!-- v2.0.1: crash recovery -->
+    <string name="recovery_title">Murai Gallery recovered from a problem</string>
+    <string name="recovery_text">Something went wrong the last time the app ran. The details were saved to the error log — you can copy or share them to help fix the issue.</string>
+    <string name="recovery_dismiss">Start the app</string>
+
+    <!-- v2.0.1: tool / player errors -->
+    <string name="error_tool_title">That did not work</string>
+    <string name="error_tool_text">The tool hit a problem and stopped safely. Nothing was broken — try again or pick different items.</string>
+    <string name="video_error_title">This video could not be played</string>
+    <string name="video_error_text">The file may be damaged or in a format this device cannot decode.</string>
 
     <!-- Home / gallery -->
     <string name="items_count_suffix">items</string>
