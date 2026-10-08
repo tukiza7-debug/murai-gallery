@@ -29,6 +29,10 @@ class BackupManager(
     private val settings: SettingsRepository
 ) {
 
+    private companion object {
+        private const val MAX_BACKUP_JSON_BYTES = 4 * 1024 * 1024
+    }
+
     data class BackupSummary(val items: Int, val tags: Int, val presets: Int, val settings: Int)
 
     suspend fun exportTo(output: OutputStream): BackupSummary = withContext(Dispatchers.IO) {
@@ -69,6 +73,20 @@ class BackupManager(
         BackupSummary(favIds.size, tagList.size, presets.size, prefs.size)
     }
 
+    private fun readBounded(input: InputStream, max: Int): ByteArray {
+        val out = java.io.ByteArrayOutputStream()
+        val buf = ByteArray(8 * 1024)
+        var total = 0
+        while (true) {
+            val n = input.read(buf)
+            if (n <= 0) break
+            total += n
+            if (total > max) throw IllegalStateException("backup entry too large")
+            out.write(buf, 0, n)
+        }
+        return out.toByteArray()
+    }
+
     suspend fun importFrom(input: InputStream): BackupSummary = withContext(Dispatchers.IO) {
         var items = 0
         var tags = 0
@@ -78,7 +96,9 @@ class BackupManager(
             var entry: ZipEntry? = zip.nextEntry
             while (entry != null) {
                 if (entry.name == "murai-backup.json") {
-                    val text = zip.readBytes().toString(Charsets.UTF_8)
+                    // Bounded read: backup JSON is a few KB; a hostile or
+                    // corrupt zip must not OOM the process (fix #5 follow-up).
+                    val text = readBounded(zip, MAX_BACKUP_JSON_BYTES).toString(Charsets.UTF_8)
                     val root = JSONObject(text)
                     if (root.optString("app") == "murai-gallery") {
                         // favorites flags are restored for items still present

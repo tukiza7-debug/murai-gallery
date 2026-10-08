@@ -57,6 +57,7 @@ import com.murai.gallery.di.AppContainer
 import com.murai.gallery.domain.image.Adjustments
 import com.murai.gallery.domain.image.Filter
 import com.murai.gallery.domain.image.ImageOps
+import com.murai.gallery.ui.components.launchSafely
 import com.murai.gallery.ui.components.ProgressOverlay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -97,12 +98,15 @@ class EditorViewModel(private val container: AppContainer) : ViewModel() {
     val state = MutableStateFlow(EditorState())
 
     fun load(uri: String) {
-        viewModelScope.launch {
-            if (state.value.source != null) return@launch
+        launchSafely(container.appContext, "editor") {
+            if (state.value.source != null) return@launchSafely
             state.value = state.value.copy(working = true)
             val entity = resolveEntity(uri)
-            val bmp = entity?.let {
-                ImageOps.decodeFileSampled(it.path, 1600)
+            val targetUri = entity?.uri ?: uri
+            val bmp = withContext(Dispatchers.IO) {
+                // Decode through the content URI — the cached relative path is
+                // not a real file path (fix #1).
+                ImageOps.decodeSourceSampled(container.appContext, targetUri, 1600)
             }
             state.value = state.value.copy(source = bmp, entity = entity, working = false)
         }
@@ -180,7 +184,7 @@ class EditorViewModel(private val container: AppContainer) : ViewModel() {
         val s = state.value
         val source = s.source ?: return
         val entity = s.entity ?: return
-        viewModelScope.launch {
+        launchSafely(container.appContext, "editor") {
             state.value = s.copy(working = true)
             val out = withContext(Dispatchers.Default) {
                 render(source, s)

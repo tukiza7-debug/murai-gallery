@@ -37,11 +37,18 @@ fun PanoView(uri: String) {
     var zoom by remember { mutableFloatStateOf(1.0f) }
 
     LaunchedEffect(uri) {
-        bitmap = if (uri.startsWith("content:")) {
-            context.contentResolver.openInputStream(android.net.Uri.parse(uri))?.use { decodeLong(it) }
-        } else {
-            decodeLong(File(uri.replace("file://", "")).inputStream())
-        }
+        bitmap = runCatching {
+            // Two passes need two streams: provider streams are not seekable.
+            if (uri.startsWith("content:")) {
+                val parsed = android.net.Uri.parse(uri)
+                val sample = context.contentResolver.openInputStream(parsed)?.use { boundsOnly(it) } ?: 1
+                context.contentResolver.openInputStream(parsed)?.use { decodeLong(it, sample) }
+            } else {
+                val file = File(uri.replace("file://", ""))
+                val sample = boundsOnly(file.inputStream())
+                decodeLong(file.inputStream(), sample)
+            }
+        }.getOrNull()
     }
 
     val bmp = bitmap
@@ -94,11 +101,15 @@ fun PanoView(uri: String) {
     }
 }
 
-private fun decodeLong(stream: java.io.InputStream, maxH: Int = 1024): Bitmap? = runCatching {
+private fun boundsOnly(stream: java.io.InputStream): Int {
     val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
     BitmapFactory.decodeStream(stream, null, bounds)
     var sample = 1
-    while (bounds.outHeight / (sample * 2) >= maxH) sample *= 2
+    while (bounds.outHeight / (sample * 2) >= 1024) sample *= 2
+    return sample
+}
+
+private fun decodeLong(stream: java.io.InputStream, sample: Int, maxH: Int = 1024): Bitmap? = runCatching {
     val opts = BitmapFactory.Options().apply { inSampleSize = sample }
     BitmapFactory.decodeStream(stream, null, opts)
 }.getOrNull()

@@ -28,6 +28,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.murai.gallery.R
 import com.murai.gallery.di.AppContainer
 import com.murai.gallery.domain.image.ImageOps
+import com.murai.gallery.ui.components.launchSafely
 import com.murai.gallery.ui.components.ProgressOverlay
 import com.murai.gallery.ui.components.ToolScaffold
 import com.murai.gallery.util.Formatters
@@ -64,7 +65,7 @@ class CompressorViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     fun loadLargest() {
-        viewModelScope.launch {
+        launchSafely(container.appContext, "compressor") {
             val files = container.repository.biggestFiles(512 * 1024, 20)
             state.value = state.value.copy(
                 originals = files.filter { !it.isVideo }
@@ -76,14 +77,18 @@ class CompressorViewModel(private val container: AppContainer) : ViewModel() {
     fun run(context: Context) {
         val s = state.value
         if (s.originals.isEmpty()) return
-        viewModelScope.launch {
+        launchSafely(container.appContext, "compressor") {
             state.value = s.copy(working = true, progress = 0f, done = false)
             var processed = 0
             for (target in s.originals) {
                 val entity = container.db.libraryDao().byId(target.id) ?: continue
                 val newBytes = withContext(Dispatchers.IO) {
                     runCatching {
-                        val bmp = ImageOps.decodeFileSampled(entity.path, s.maxWidth) ?: return@runCatching 0L
+                        // Decode through the content URI — the cached path
+                        // column is not a real file path (fix #1).
+                        val bmp = ImageOps.decodeSourceSampled(
+                            container.appContext, entity.uri, s.maxWidth
+                        ) ?: return@runCatching 0L
                         val resized = ImageOps.resize(bmp, s.maxWidth)
                         val bos = ByteArrayOutputStream()
                         resized.compress(Bitmap.CompressFormat.JPEG, s.quality, bos)
@@ -92,6 +97,7 @@ class CompressorViewModel(private val container: AppContainer) : ViewModel() {
                             bytes.inputStream(), "Pictures/Murai Compressed/", "c_${entity.name}", false, "image/jpeg"
                         )
                         if (resized !== bmp) resized.recycle()
+                        bmp.recycle()
                         if (saved != null) bytes.size.toLong() else 0L
                     }.getOrDefault(0L)
                 }

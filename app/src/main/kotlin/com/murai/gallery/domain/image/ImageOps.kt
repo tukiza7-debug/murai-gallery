@@ -39,7 +39,47 @@ enum class Filter(val id: String) {
 
 object ImageOps {
 
-    /** Samples a file so the decoded bitmap fits within [maxDim]. */
+    /**
+     * Samples a source stream so the decoded bitmap fits within [maxDim].
+     * Two passes need two streams: provider streams are not seekable, so
+     * callers open the source twice (see decodeSourceSampled).
+     */
+    fun boundsSample(stream: InputStream): Int {
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeStream(stream, null, bounds)
+        var sample = 1
+        while (max(bounds.outWidth, bounds.outHeight) / (sample * 2) >= 2048) sample *= 2
+        return sample
+    }
+
+    fun decodeStreamSampled(stream: InputStream, sample: Int): Bitmap? = runCatching {
+        val opts = BitmapFactory.Options().apply {
+            inSampleSize = sample
+            inPreferredConfig = Bitmap.Config.ARGB_8888
+        }
+        BitmapFactory.decodeStream(stream, null, opts)
+    }.getOrNull()
+
+    /** Opens [uri] (content or file) sampled to [maxDim] via two stream passes. */
+    fun decodeSourceSampled(context: android.content.Context, uri: String, maxDim: Int = 1600): Bitmap? =
+        runCatching {
+            val parsed = android.net.Uri.parse(uri)
+            if (uri.startsWith("content:")) {
+                val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                context.contentResolver.openInputStream(parsed)?.use {
+                    BitmapFactory.decodeStream(it, null, bounds)
+                }
+                var sample = 1
+                while (max(bounds.outWidth, bounds.outHeight) / (sample * 2) >= maxDim) sample *= 2
+                context.contentResolver.openInputStream(parsed)?.use {
+                    decodeStreamSampled(it, sample)
+                }
+            } else {
+                decodeFileSampled(uri, maxDim)
+            }
+        }.getOrNull()
+
+    /** Samples a real file so the decoded bitmap fits within [maxDim]. */
     fun decodeFileSampled(path: String, maxDim: Int = 2048): Bitmap? = runCatching {
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         BitmapFactory.decodeFile(path, bounds)

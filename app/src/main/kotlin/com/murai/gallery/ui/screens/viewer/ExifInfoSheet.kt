@@ -1,6 +1,5 @@
 package com.murai.gallery.ui.screens.viewer
 
-import android.graphics.BitmapFactory
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,21 +20,33 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.murai.gallery.R
 import com.murai.gallery.data.db.entity.LibraryItemEntity
 import com.murai.gallery.di.AppContainer
 import com.murai.gallery.domain.exif.ExifEditor
+import com.murai.gallery.util.ConsentBus
+import com.murai.gallery.util.ErrorLogger
 import com.murai.gallery.util.Formatters
-import java.io.File
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-/** Metadata viewer + editor (date taken, GPS coordinates). */
+/**
+ * Metadata viewer + editor (date taken, GPS coordinates).
+ *
+ * v2.0.1: all reads and writes go through the item's content URI — the cached
+ * relative path is never treated as a file. Reads use openInputStream; writes
+ * round-trip through a private temp file inside MediaOperations.writeExif and
+ * surface a consent request when the system requires one.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExifInfoSheet(
@@ -43,14 +54,29 @@ fun ExifInfoSheet(
     container: AppContainer,
     onDismiss: () -> Unit
 ) {
-    val info = remember(item.path) {
-        if (item.path.isNotBlank() && File(item.path).exists()) ExifEditor.read(File(item.path))
-        else ExifEditor.ExifInfo(item.dateTakenSec, item.latitude, item.longitude, null, 0)
+    // EXIF is read off the main thread from the content URI stream.
+    val info by produceState(
+        initialValue = ExifEditor.ExifInfo(item.dateTakenSec, item.latitude, item.longitude, null, 0),
+        key1 = item.id
+    ) {
+        val read = withContext(Dispatchers.IO) {
+            runCatching {
+                item.uri.let { uri ->
+                    container.appContext.contentResolver
+                        .openInputStream(android.net.Uri.parse(uri))?.use { stream ->
+                            ExifEditor.read(stream)
+                        }
+                }
+            }.getOrNull()
+        }
+        if (read != null) value = read
     }
     var dateText by remember { mutableStateOf(if (info.dateTakenSec > 0) ExifEditor.format(info.dateTakenSec) else "") }
     var latText by remember { mutableStateOf(if (info.latitude != 0.0) info.latitude.toString() else "") }
     var lonText by remember { mutableStateOf(if (info.longitude != 0.0) info.longitude.toString() else "") }
     var saved by remember { mutableStateOf(false) }
+    var failed by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
@@ -85,7 +111,8 @@ fun ExifInfoSheet(
             InfoRow(stringResource(R.string.meta_added), Formatters.dateTime(item.dateAddedSec))
             InfoRow(stringResource(R.string.meta_modified), Formatters.dateTime(item.dateModifiedSec))
             if (item.isVideo) InfoRow(stringResource(R.string.meta_duration), Formatters.duration(item.durationMs))
-            if (info.cameraModel != null) InfoRow(stringResource(R.string.meta_camera), info.cameraModel)
+            val cameraModel = info.cameraModel
+            if (cameraModel != null) InfoRow(stringResource(R.string.meta_camera), cameraModel)
             if (item.latitude != 0.0) {
                 InfoRow(
                     stringResource(R.string.meta_location),
@@ -119,19 +146,42 @@ fun ExifInfoSheet(
             Spacer(Modifier.height(8.dp))
             Button(
                 onClick = {
-                    val file = File(item.path)
-                    if (file.exists()) {
+                    scope.launch {
                         val epoch = ExifEditor.parse(dateText)
-                        if (epoch > 0) ExifEditor.writeDate(file, epoch)
                         val lat = latText.toDoubleOrNull()
                         val lon = lonText.toDoubleOrNull()
-                        if (lat != null && lon != null) ExifEditor.writeLocation(file, lat, lon)
-                        saved = true
+                        val result = container.operations.writeExif(item) { tempFile ->
+                            if (epoch > 0) ExifEditor.writeDate(tempFile, epoch)
+                            if (lat != null && lon != null) ExifEditor.writeLocation(tempFile, lat, lon)
+                        }
+                        when {
+                            result.ok -> saved = true
+                            result.consent != null -> ConsentBus.request(result.consent) { granted ->
+                                if (granted) {
+                                    // Retry once with the same edit after consent.
+                                    scope.launch {
+                                        val retry = container.operations.writeExif(item) { tempFile ->
+                                            if (epoch > 0) ExifEditor.writeDate(tempFile, epoch)
+                                            if (lat != null && lon != null) ExifEditor.writeLocation(tempFile, lat, lon)
+                                        }
+                                        saved = retry.ok
+                                        failed = !retry.ok
+                                    }
+                                } else failed = true
+                            }
+                            else -> failed = true
+                        }
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(if (saved) stringResource(R.string.meta_saved) else stringResource(R.string.action_save))
+                Text(
+                    when {
+                        saved -> stringResource(R.string.meta_saved)
+                        failed -> stringResource(R.string.action_failed)
+                        else -> stringResource(R.string.action_save)
+                    }
+                )
             }
             TextButton(
                 onClick = onDismiss,

@@ -2,6 +2,7 @@ package com.murai.gallery.domain.exif
 
 import androidx.exifinterface.media.ExifInterface
 import java.io.File
+import java.io.InputStream
 import kotlin.math.abs
 
 /** EXIF read/write helpers for dates and GPS location. */
@@ -15,9 +16,20 @@ object ExifEditor {
         val orientation: Int
     )
 
+    /** Reads from a content URI stream — the cached path column is not a file path. */
+    fun read(stream: InputStream): ExifInfo {
+        val exif = runCatching { ExifInterface(stream) }.getOrNull()
+            ?: return ExifInfo(0, 0.0, 0.0, null, 0)
+        return readFrom(exif)
+    }
+
     fun read(file: File): ExifInfo {
         val exif = runCatching { ExifInterface(file) }.getOrNull()
             ?: return ExifInfo(0, 0.0, 0.0, null, 0)
+        return readFrom(exif)
+    }
+
+    private fun readFrom(exif: ExifInterface): ExifInfo {
         val date = runCatching {
             exif.getAttribute(ExifInterface.TAG_DATETIME_ORIGINAL)
                 ?.let { parse(it) } ?: 0L

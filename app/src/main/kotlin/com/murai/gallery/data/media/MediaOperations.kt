@@ -41,6 +41,20 @@ class MediaOperations(
             id
         )
 
+    /**
+     * Resolves the on-disk path from the DATA column. Only meaningful on
+     * API 26-28 where the app may touch the file directly; on 29+ the value
+     * is not writable and callers must use content URI streams instead.
+     * Never trusts the cached relative "path" column.
+     */
+    private fun realDataPath(item: LibraryItemEntity): String? = runCatching {
+        context.contentResolver.query(
+            contentUri(item.id, item.isVideo),
+            arrayOf(MediaStore.MediaColumns.DATA),
+            null, null, null
+        )?.use { c -> if (c.moveToFirst()) c.getString(0) else null }
+    }.getOrNull()
+
     suspend fun trash(ids: List<LibraryItemEntity>): BatchResult = withContext(Dispatchers.IO) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             trashModern(ids)
@@ -67,11 +81,16 @@ class MediaOperations(
         val binDir = File(context.getExternalFilesDir(null), "bin").apply { mkdirs() }
         for (item in items) {
             try {
-                val src = File(item.path)
-                if (src.exists()) {
-                    val dest = File(binDir, "${item.id}_${item.name}")
-                    src.copyTo(dest, overwrite = true)
-                    context.contentResolver.delete(contentUri(item.id, item.isVideo), null, null)
+                // Copy through the content URI stream — the cached path column
+                // is RELATIVE_PATH on 29+ and is never a file path.
+                val srcUri = contentUri(item.id, item.isVideo)
+                val dest = File(binDir, "${item.id}_${item.name}")
+                val copied = context.contentResolver.openInputStream(srcUri)?.use { input ->
+                    dest.outputStream().use { output -> input.copyTo(output) }
+                    true
+                } ?: false
+                if (copied) {
+                    context.contentResolver.delete(srcUri, null, null)
                 }
                 db.libraryDao().setTrashed(listOf(item.id), true)
                 ok++
@@ -164,13 +183,17 @@ class MediaOperations(
 
     suspend fun rename(item: LibraryItemEntity, newName: String): Boolean = withContext(Dispatchers.IO) {
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                // Q+ renames go through MediaStore; RELATIVE_PATH keeps the folder.
                 val values = ContentValues().apply {
                     put(MediaStore.MediaColumns.DISPLAY_NAME, newName)
                 }
                 context.contentResolver.update(contentUri(item.id, item.isVideo), values, null, null) > 0
             } else {
-                val src = File(item.path)
+                // Legacy: rename the real file resolved from DATA, not the cached path.
+                val realPath = realDataPath(item) ?: return@withContext false
+                val src = File(realPath)
+                if (!src.exists()) return@withContext false
                 val dest = File(src.parentFile, newName)
                 val done = src.renameTo(dest)
                 if (done) scanFile(dest)
@@ -209,9 +232,12 @@ class MediaOperations(
                 val updated = context.contentResolver.update(contentUri(item.id, item.isVideo), values, null, null)
                 if (updated > 0) contentUri(item.id, item.isVideo) else null
             } else {
+                // Legacy move: resolve the real file from DATA and rename it.
+                val realPath = realDataPath(item) ?: return@withContext null
+                val src = File(realPath)
+                if (!src.exists()) return@withContext null
                 val base = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM)
                 val destDir = File(base, targetFolder.substringAfter("DCIM/").ifEmpty { "Murai" }).apply { mkdirs() }
-                val src = File(item.path)
                 val dest = File(destDir, item.name)
                 if (src.renameTo(dest)) {
                     scanFile(dest)
@@ -281,4 +307,52 @@ class MediaOperations(
             context, arrayOf(file.absolutePath), null, null
         )
     }
+
+    /**
+     * Edits the EXIF metadata of a media item through the content URI:
+     * the original bytes are copied to a private temp file, the edit runs
+     * there, and the result is written back through openOutputStream. On
+     * API 30+ writing to shared media may require user consent; the
+     * resulting IntentSender is surfaced instead of crashing.
+     * Returns WRITE_OK, or WRITE_CONSENT with the sender to launch.
+     */
+    suspend fun writeExif(item: LibraryItemEntity, edit: (File) -> Unit): ExifWriteResult =
+        withContext(Dispatchers.IO) {
+            val temp = File(context.cacheDir, "murai_exif_${System.nanoTime()}_${item.name}")
+            try {
+                val srcUri = contentUri(item.id, item.isVideo)
+                context.contentResolver.openInputStream(srcUri)?.use { input ->
+                    temp.outputStream().use { output -> input.copyTo(output) }
+                } ?: return@withContext ExifWriteResult(false, null)
+                edit(temp)
+                try {
+                    context.contentResolver.openOutputStream(srcUri)?.use { out ->
+                        temp.inputStream().use { it.copyTo(out) }
+                    } ?: return@withContext ExifWriteResult(false, null)
+                    ExifWriteResult(true, null)
+                } catch (sec: SecurityException) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        try {
+                            val request = MediaStore.createWriteRequest(
+                                context.contentResolver, listOf(srcUri)
+                            )
+                            ExifWriteResult(false, request.intentSender)
+                        } catch (t: Throwable) {
+                            ErrorLogger.write(context, "exif-write-consent", t)
+                            ExifWriteResult(false, null)
+                        }
+                    } else {
+                        ErrorLogger.write(context, "exif-write", sec)
+                        ExifWriteResult(false, null)
+                    }
+                }
+            } catch (t: Throwable) {
+                ErrorLogger.write(context, "exif-write", t)
+                ExifWriteResult(false, null)
+            } finally {
+                temp.delete()
+            }
+        }
+
+    data class ExifWriteResult(val ok: Boolean, val consent: IntentSender?)
 }
